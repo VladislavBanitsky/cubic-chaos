@@ -20,6 +20,7 @@
             background: linear-gradient(135deg, #1a1a2e, #16213e);
             color: white;
             padding: 20px;
+            touch-action: manipulation;
         }
         
         .game-container {
@@ -118,7 +119,6 @@
         }
         
         button {
-            
             padding: 12px;
             margin-top: 10px;
             background: #e94560;
@@ -160,6 +160,56 @@
             margin-bottom: 30px;
         }
         
+        .mobile-controls {
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .mobile-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 24px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        
+        .mobile-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .rotate-btn {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        
+        .left-btn {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        
+        .down-btn {
+            grid-column: 2;
+            grid-row: 2;
+        }
+        
+        .right-btn {
+            grid-column: 3;
+            grid-row: 2;
+        }
+        
         .instructions {
             margin-top: 20px;
             font-size: 14px;
@@ -182,6 +232,21 @@
                 flex: 1;
                 min-width: 150px;
             }
+            
+            .mobile-controls {
+                display: grid;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .mobile-controls {
+                max-width: 250px;
+            }
+            
+            .mobile-btn {
+                height: 50px;
+                font-size: 20px;
+            }
         }
     </style>
 </head>
@@ -189,6 +254,12 @@
     <div class="game-container">
         <div class="game-board">
             <div class="board" id="board"></div>
+            <div class="mobile-controls">
+                <button class="mobile-btn rotate-btn">↻</button>
+                <button class="mobile-btn left-btn">←</button>
+                <button class="mobile-btn down-btn">↓</button>
+                <button class="mobile-btn right-btn">→</button>
+            </div>
         </div>
         
         <div class="side-panel">
@@ -221,6 +292,7 @@
                 <div class="control-item">↑ : Поворот</div>
                 <div class="control-item">↓ : Ускорение</div>
                 <div class="control-item">Пробел : Пауза</div>
+                <div class="control-item">Касание : Мобильное управление</div>
             </div>
         </div>
     </div>
@@ -259,6 +331,12 @@
         const restartButton = document.getElementById('restart-button');
         const gameOverElement = document.getElementById('game-over');
         const finalScoreElement = document.getElementById('final-score');
+        
+        // Кнопки мобильного управления
+        const rotateBtn = document.querySelector('.rotate-btn');
+        const leftBtn = document.querySelector('.left-btn');
+        const downBtn = document.querySelector('.down-btn');
+        const rightBtn = document.querySelector('.right-btn');
         
         // Игровые переменные
         let board = [];
@@ -459,17 +537,6 @@
             renderBoard();
         }
         
-        // Ускоренное падение
-        function hardDrop() {
-            if (!currentPiece) return;
-            
-            while (!hasCollision(currentPiece, 1, 0)) {
-                currentPiece.row++;
-            }
-            
-            placePiece();
-        }
-        
         // Размещение фигуры на поле
         function placePiece() {
             if (!currentPiece) return;
@@ -599,24 +666,22 @@
             switch(e.key) {
                 case 'ArrowLeft':
                     moveLeft();
+                    e.preventDefault();  // предотвращаем стандартное поведение браузера
                     break;
                 case 'ArrowRight':
                     moveRight();
+                    e.preventDefault();  // предотвращаем стандартное поведение браузера
                     break;
                 case 'ArrowDown':
                     moveDown();
+                    e.preventDefault();  // предотвращаем стандартное поведение браузера
                     break;
                 case 'ArrowUp':
                     rotatePiece();
                     break;
                 case ' ':
-                    if (!isPaused) {
-                        hardDrop();
-                    }
-                    break;
-                case 'p':
-                case 'P':
                     togglePause();
+                    e.preventDefault();  // предотвращаем стандартное поведение браузера
                     break;
             }
         });
@@ -625,6 +690,72 @@
         startButton.addEventListener('click', startGame);
         pauseButton.addEventListener('click', togglePause);
         restartButton.addEventListener('click', startGame);
+        
+        // Обработчики мобильного управления
+        rotateBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!isGameOver && !isPaused) {
+                rotatePiece();
+            }
+        });
+        
+        leftBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!isGameOver && !isPaused) {
+                moveLeft();
+            }
+        });
+        
+        downBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!isGameOver && !isPaused) {
+                moveDown();
+            }
+        });
+        
+        rightBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!isGameOver && !isPaused) {
+                moveRight();
+            }
+        });
+        
+        // Также добавляем обработчики для кликов (на случай гибридных устройств)
+        rotateBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!isGameOver && !isPaused) {
+                rotatePiece();
+            }
+        });
+        
+        leftBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!isGameOver && !isPaused) {
+                moveLeft();
+            }
+        });
+        
+        downBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!isGameOver && !isPaused) {
+                moveDown();
+            }
+        });
+        
+        rightBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!isGameOver && !isPaused) {
+                moveRight();
+            }
+        });
+        
+        // Предотвращаем контекстное меню при долгом нажатии на кнопки управления
+        document.querySelectorAll('.mobile-btn').forEach(btn => {
+            btn.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                return false;
+            });
+        });
         
         // Инициализация игры при загрузке
         window.addEventListener('load', () => {
