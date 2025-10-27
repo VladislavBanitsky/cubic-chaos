@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тетрис</title>
-    <style>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="icon" href="tetris_512.png" type="image/png">
+	<style>
         * {
             margin: 0;
             padding: 0;
@@ -43,7 +45,7 @@
             grid-template-columns: repeat(10, 1fr);
             grid-template-rows: repeat(20, 1fr);
             gap: 1px;
-            width: 100%;
+            width: 90%;
             aspect-ratio: 1/2;
             background-color: rgba(255, 255, 255, 0.1);
             border: 2px solid rgba(255, 255, 255, 0.3);
@@ -162,8 +164,6 @@
         
         .mobile-controls {
             display: none;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(2, 1fr);
             gap: 10px;
             margin-top: 20px;
             width: 100%;
@@ -190,26 +190,6 @@
             background: rgba(255, 255, 255, 0.3);
         }
         
-        .rotate-btn {
-            grid-column: 2;
-            grid-row: 1;
-        }
-        
-        .left-btn {
-            grid-column: 1;
-            grid-row: 2;
-        }
-        
-        .down-btn {
-            grid-column: 2;
-            grid-row: 2;
-        }
-        
-        .right-btn {
-            grid-column: 3;
-            grid-row: 2;
-        }
-        
         .instructions {
             margin-top: 20px;
             font-size: 14px;
@@ -223,6 +203,7 @@
             }
             
             .side-panel {
+				display: none;
                 width: 100%;
                 flex-direction: row;
                 flex-wrap: wrap;
@@ -253,12 +234,22 @@
 <body>
     <div class="game-container">
         <div class="game-board">
-            <div class="board" id="board"></div>
-            <div class="mobile-controls">
-                <button class="mobile-btn rotate-btn">↻</button>
-                <button class="mobile-btn left-btn">←</button>
-                <button class="mobile-btn down-btn">↓</button>
-                <button class="mobile-btn right-btn">→</button>
+            <div class="container board" id="board"></div>
+            <div class="container mobile-controls">
+				<div class="row">
+					<div class="col-3 d-grid gap-2">
+						<button class="mobile-btn rotate-btn">↻</button>
+					</div>
+					<div class="col-3 d-grid gap-2">
+						<button class="mobile-btn left-btn">←</button>
+					</div>
+					<div class="col-3 d-grid gap-2">
+						<button class="mobile-btn down-btn">↓</button>
+					</div>
+					<div class="col-3 d-grid gap-2">
+						<button class="mobile-btn right-btn">→</button>
+					</div>
+				</div>
             </div>
         </div>
         
