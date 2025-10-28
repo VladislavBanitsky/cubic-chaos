@@ -1,0 +1,20 @@
+Cubic Chaos
+
+Collect endlessly falling shapes in a line and score points!
+
+The main goal of the game is to position the falling pieces so that they fill the horizontal lines without gaps.
+Scoring system:
+1 line = 40 points ? level,
+2 lines = 100 points ? level,
+3 lines = 300 points ? level,
+4 lines = 1200 points ? level.
+Difficulty levels
+The level increases every 10 cleared lines.
+With each level, the falling speed of the pieces increases.
+At each new level, the speed increases by 0.1 seconds.
+Initial speed: 1 second per step down.
+
+The left/right arrows - horizontal movement of the shape.
+The up arrow - shape's rotation.
+Down arrow - accelerated fall.
+Space bar - pause /continue the game.
