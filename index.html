@@ -431,7 +431,9 @@
                 // Скрываем экран загрузки
                 document.getElementById('loading-screen').style.display = 'none';
                 
-                // Инициализируем игру после загрузки SDK
+                showAd("старт игры");  // реклама при старте игры
+				
+				// Инициализируем игру после загрузки SDK
                 initGame();
             }).catch(error => {
                 console.error('Failed to initialize Yandex SDK:', error);
