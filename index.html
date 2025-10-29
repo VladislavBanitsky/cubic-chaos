@@ -163,6 +163,20 @@
         button:hover {
             background: #ff6b81;
         }
+		
+		button:focus {
+			outline: none;
+			box-shadow: none;
+		}
+
+		button:focus-visible {
+			outline: 2px solid #e94560;
+			outline-offset: 2px;
+		}
+		
+		#pause-button {  /* игра ещё не начата, */
+			visibility: hidden  /* прячем кнопку Пауза/Продолжить */
+		}
         
         .game-over {
             position: absolute;
@@ -185,8 +199,9 @@
             margin-bottom: 20px;
         }
         
-        .game-over p {
-            font-size: 24px;
+        .game-over div {
+            font-size: 36px;
+			font-weight: 500;
             margin-bottom: 30px;
         }
         
@@ -378,6 +393,9 @@
         let gameplayAPI = null;
         let isYandexPlatform = false;
         
+		// Переменные для отслеживания загрузки ресурсов
+        let resourcesLoaded = false;
+		
         // Тексты для разных языков
         const translations = {
             ru: {
@@ -430,42 +448,114 @@
 
         // Текущий язык
         let currentLanguage = 'ru';
-
-        // Проверяем, находимся ли мы в окружении Яндекс Игр
-        if (typeof YaGames !== 'undefined') {
-            YaGames.init().then(_ysdk => {
-                ysdk = _ysdk;
-                isYandexPlatform = true;
-                console.log('Yandex SDK initialized');
+		
+		// Основная функция загрузки ресурсов
+        async function loadAllResources() {
+            try {
+                await Promise.all([
+                    loadBackgroundImage(),
+                    loadIcon(),
+					initializeYandexSDK()
+                ]);
+                resourcesLoaded = true;
+				// ПРЯМО ЗДЕСЬ вызываем скрытие экрана загрузки
+				hideLoadingScreen();
+            } catch (error) {
+                console.error('Ошибка загрузки ресурсов:', error);
+                resourcesLoaded = true;
+				// Даже при ошибке скрываем экран загрузки
+				hideLoadingScreen();
+            }
+        }
+		
+		// Загрузка фонового изображения
+        function loadBackgroundImage() {
+            return new Promise((resolve, reject) => {
+                const bgImage = new Image();
+                bgImage.src = 'bg.jpg';
                 
-                // Получаем Gameplay API
-                gameplayAPI = ysdk.features.GameplayAPI;
+                bgImage.onload = function() {
+                    console.log('Фоновое изображение загружено');
+                    resolve();
+                };
                 
-                // Определяем язык через SDK
-                detectLanguage();
-                
-                // Сообщаем SDK, что игра загружена
-                ysdk.features.LoadingAPI?.ready?.();
-                
-                // Скрываем экран загрузки
-                document.getElementById('loading-screen').style.display = 'none';
-                
-                showAd("старт игры");  // реклама при старте игры
-				
-				// Инициализируем игру после загрузки SDK
-                initGame();
-            }).catch(error => {
-                console.error('Failed to initialize Yandex SDK:', error);
-                // Если SDK не загрузился, все равно запускаем игру
-                document.getElementById('loading-screen').style.display = 'none';
-                initGame();
+                bgImage.onerror = function() {
+                    console.warn('Не удалось загрузить фоновое изображение, используется градиентный фон');
+                    resolve(); // Все равно разрешаем, чтобы игра запустилась
+                };
             });
-        } else {
-            // Если не в Яндекс Играх, сразу запускаем игру
-            document.getElementById('loading-screen').style.display = 'none';
-            initGame();
+        }
+		
+		// Загрузка иконки
+        function loadIcon() {
+            return new Promise((resolve) => {
+                const icon = new Image();
+                icon.src = 'icon.png';
+                
+                icon.onload = function() {
+                    console.log('Иконка загружена');
+                    resolve();
+                };
+                
+                icon.onerror = function() {
+                    console.warn('Не удалось загрузить иконку');
+                    resolve(); // Все равно разрешаем
+                };
+            });
         }
 
+		// Функция инициализации Яндекс SDK
+		function initializeYandexSDK() {
+			return new Promise((resolve) => {
+				// Проверяем, находимся ли мы в окружении Яндекс Игр
+				if (typeof YaGames !== 'undefined') {
+					YaGames.init().then(_ysdk => {
+						ysdk = _ysdk;
+						isYandexPlatform = true;
+						console.log('Yandex SDK initialized');
+						
+						// Получаем Gameplay API
+						gameplayAPI = ysdk.features.GameplayAPI;
+						
+						// Определяем язык через SDK
+						detectLanguage();
+						
+						// Сообщаем SDK, что игра загружена
+						ysdk.features.LoadingAPI?.ready?.();
+						resolve();
+					}).catch(error => {
+						console.error('Failed to initialize Yandex SDK:', error);
+						// Если SDK не загрузился, все равно запускаем игру
+						detectLanguage();
+						resolve();
+					});
+				} else {
+					// Если не в Яндекс Играх, сразу запускаем игру
+					detectLanguage();
+					resolve();
+				}
+			});
+		}
+		
+		// Функция скрытия экрана загрузки
+        function hideLoadingScreen() {
+            const loadingScreen = document.getElementById('loading-screen');
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                
+                // Показываем рекламу при старте игры только после полной загрузки
+                if (isYandexPlatform) {
+                    showAd("старт игры");
+                }
+                
+                // Инициализируем игру после полной загрузки
+                initGame();
+            }, 500);
+        }
+		
+        loadAllResources();  // запускаем загрузку ресурсов
+		
         // Функция определения языка
         function detectLanguage() {
             if (ysdk && ysdk.environment) {
@@ -490,7 +580,7 @@
                     currentLanguage = 'en';
                 }
             }
-
+			
             // Применяем переводы
             applyTranslations();
         }
@@ -966,7 +1056,10 @@
             if (gameInterval) {
                 clearInterval(gameInterval);
             }
-            
+			
+            startButton.style.visibility = 'hidden'; // прячем кнопку Начать игру
+			pauseButton.style.visibility = 'visible'; // показываем кнопку Пауза/Продолжить
+			
             initBoard();
             score = 0;
             level = 1;
@@ -1027,7 +1120,9 @@
             clearInterval(gameInterval);
             finalScoreElement.textContent = score;
             gameOverElement.style.display = 'flex';
-
+			
+			pauseButton.style.visibility = 'hidden'; // прячем кнопку Пауза/Продолжить
+			
             // Уведомляем Яндекс SDK о завершении игры
             if (isYandexPlatform && gameplayAPI) {
                 gameplayAPI.stop();
