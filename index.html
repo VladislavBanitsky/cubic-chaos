@@ -255,8 +255,8 @@
         }
         
         .loading-spinner {
-            width: 50px;
-            height: 50px;
+            width: 512px;
+            height: 512px;
             border: 5px solid rgba(255, 255, 255, 0.3);
             border-top: 5px solid #e94560;
             border-radius: 50%;
@@ -319,7 +319,6 @@
     <!-- Экран загрузки -->
     <div class="loading-screen" id="loading-screen">
         <div class="loading-spinner"></div>
-        <div id="loading-text">Загрузка игры...</div>
     </div>
 
     <!-- Индикатор показа рекламы -->
@@ -399,7 +398,6 @@
         // Тексты для разных языков
         const translations = {
             ru: {
-                loading: "Загрузка игры...",
                 nextPiece: "Следующая",
                 stats: "Статистика",
                 score: "Очки:",
@@ -422,7 +420,6 @@
 				reachedScore: "Набрано очков:"
             },
             en: {
-                loading: "Loading game...",
                 nextPiece: "Next",
                 stats: "Statistics",
                 score: "Score:",
@@ -590,7 +587,6 @@
             const t = translations[currentLanguage];
             
             // Обновляем тексты элементов
-            document.getElementById('loading-text').textContent = t.loading;
             document.getElementById('next-piece-title').textContent = t.nextPiece;
             document.getElementById('stats-title').textContent = t.stats;
             document.getElementById('score-label').textContent = t.score;
