@@ -282,6 +282,28 @@
             z-index: 5;
         }
         
+        .game-over-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .revive-button {
+            background: #4CAF50;
+        }
+        
+        .revive-button:hover {
+            background: #66BB6A;
+        }
+        
+        .new-game-button {
+            background: #e94560;
+        }
+        
+        .new-game-button:hover {
+            background: #ff6b81;
+        }
+        
         @media (max-width: 768px) {
             .game-container {
                 flex-direction: column;
@@ -300,6 +322,11 @@
             
             .mobile-controls {
                 display: grid;
+            }
+            
+            .game-over-buttons {
+                flex-direction: column;
+                gap: 10px;
             }
         }
         
@@ -382,7 +409,10 @@
     <div class="game-over" id="game-over">
         <h1 id="game-over-title">Игра окончена!</h1>
         <div><span id="final-score-text">Ваш счет: </span><span id="final-score">0</span></div>
-        <button id="restart-button">Играть снова</button>
+        <div class="game-over-buttons">
+            <button id="revive-button" class="revive-button">Возродиться (10 сек реклама)</button>
+            <button id="new-game-button" class="new-game-button">Новая игра</button>
+        </div>
     </div>
     
     <script src="https://yandex.ru/games/sdk/v2"></script>
@@ -415,9 +445,8 @@
                 finalScore: "Ваш счет: ",
                 restartButton: "Играть снова",
                 adIndicator: "Реклама",
-				deletedLines: "Убрано линий:",
-				reachedLevel: "Достигнут уровень:",
-				reachedScore: "Набрано очков:"
+                reviveButton: "Возродиться (10 сек реклама)",
+                newGameButton: "Новая игра"
             },
             en: {
                 nextPiece: "Next",
@@ -437,9 +466,8 @@
                 finalScore: "Your score: ",
                 restartButton: "Play Again",
                 adIndicator: "Ad",
-				deletedLines: "Lines removed:",
-				reachedLevel: "The level has been reached:",
-				reachedScore: "Points scored:"
+                reviveButton: "Revive (10 sec ad)",
+                newGameButton: "New Game"
             }
         };
 
@@ -458,7 +486,7 @@
 				// ПРЯМО ЗДЕСЬ вызываем скрытие экрана загрузки
 				hideLoadingScreen();
             } catch (error) {
-                console.error('Ошибка загрузки ресурсов:', error);
+                console.error('[LOG_ERROR] Ошибка загрузки ресурсов:', error);
                 resourcesLoaded = true;
 				// Даже при ошибке скрываем экран загрузки
 				hideLoadingScreen();
@@ -472,12 +500,12 @@
                 bgImage.src = 'bg.jpg';
                 
                 bgImage.onload = function() {
-                    console.log('Фоновое изображение загружено');
+                    console.log('[LOG_INFO] Фоновое изображение загружено');
                     resolve();
                 };
                 
                 bgImage.onerror = function() {
-                    console.warn('Не удалось загрузить фоновое изображение, используется градиентный фон');
+                    console.warn('[LOG_WARN] Не удалось загрузить фоновое изображение, используется градиентный фон');
                     resolve(); // Все равно разрешаем, чтобы игра запустилась
                 };
             });
@@ -490,12 +518,12 @@
                 icon.src = 'icon.png';
                 
                 icon.onload = function() {
-                    console.log('Иконка загружена');
+                    console.log('[LOG_INFO] Иконка загружена');
                     resolve();
                 };
                 
                 icon.onerror = function() {
-                    console.warn('Не удалось загрузить иконку');
+                    console.warn('[LOG_WARN] Не удалось загрузить иконку');
                     resolve(); // Все равно разрешаем
                 };
             });
@@ -509,7 +537,7 @@
 					YaGames.init().then(_ysdk => {
 						ysdk = _ysdk;
 						isYandexPlatform = true;
-						console.log('Yandex SDK initialized');
+						console.log('[LOG_INFO] Yandex SDK initialized');
 						
 						// Получаем Gameplay API
 						gameplayAPI = ysdk.features.GameplayAPI;
@@ -521,7 +549,7 @@
 						ysdk.features.LoadingAPI?.ready?.();
 						resolve();
 					}).catch(error => {
-						console.error('Failed to initialize Yandex SDK:', error);
+						console.error('[LOG_ERROR] Failed to initialize Yandex SDK:', error);
 						// Если SDK не загрузился, все равно запускаем игру
 						detectLanguage();
 						resolve();
@@ -541,15 +569,15 @@
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
                 
-                // Показываем рекламу при старте игры только после полной загрузки
-                if (isYandexPlatform) {
-                    showAd("старт игры");
-                }
-                
                 // Инициализируем игру после полной загрузки
                 initGame();
             }, 500);
         }
+		
+		// Показываем рекламу при старте игры
+		if (isYandexPlatform) {
+			showAd("старт игры");
+		}
 		
         loadAllResources();  // запускаем загрузку ресурсов
 		
@@ -558,7 +586,7 @@
             if (ysdk && ysdk.environment) {
                 // Получаем язык из окружения Яндекс Игр
                 const lang = ysdk.environment.i18n.lang;
-                console.log('Detected language:', lang);
+                console.log('[LOG_INFO] Detected language:', lang);
                 
                 // Устанавливаем русский язык для всех вариантов русского
                 if (lang.startsWith('ru')) {
@@ -601,7 +629,8 @@
             document.getElementById('control-pause').textContent = t.controlPause;
             document.getElementById('game-over-title').textContent = t.gameOver;
             document.getElementById('final-score-text').textContent = t.finalScore;
-            document.getElementById('restart-button').textContent = t.restartButton;
+            document.getElementById('revive-button').textContent = t.reviveButton;
+            document.getElementById('new-game-button').textContent = t.newGameButton;
             
             // Обновляем title страницы
             document.title = currentLanguage === 'ru' ? 'Кубическая мешанина' : 'Cubic Chaos';
@@ -614,15 +643,6 @@
         const BOARD_WIDTH = 10;
         const BOARD_HEIGHT = 20;
         const EMPTY = 'empty';
-        
-        // Настройки рекламы
-        const AD_SETTINGS = {
-            showAfterLines: 10,        // Показывать рекламу после каждых 10 линий
-            showAfterLevel: 3,         // Показывать рекламу после каждых 3 уровней
-            showAfterScore: 1000,      // Показывать рекламу после каждых 1000 очков
-            minTimeBetweenAds: 30000,  // Минимальное время между показами рекламы (мс)
-            chanceToShow: 0.7          // Вероятность показа рекламы (70%)
-        };
         
         // Фигуры
         const PIECES = [
@@ -643,7 +663,8 @@
         const linesElement = document.getElementById('lines');
         const startButton = document.getElementById('start-button');
         const pauseButton = document.getElementById('pause-button');
-        const restartButton = document.getElementById('restart-button');
+        const reviveButton = document.getElementById('revive-button');
+        const newGameButton = document.getElementById('new-game-button');
         const gameOverElement = document.getElementById('game-over');
         const finalScoreElement = document.getElementById('final-score');
         const adIndicator = document.getElementById('ad-indicator');
@@ -666,20 +687,15 @@
         let isGameOver = false;
         let isGameStarted = false;
         
-        // Переменные для управления рекламой
-        let lastAdShownTime = 0;
-        let lastLinesCount = 0;
-        let lastLevel = 1;
-        let lastScoreMilestone = 0;
-        
         function initGame() {
             // Инициализация игрового поля
             initBoard();
             
             // Обработчики кнопок
             startButton.addEventListener('click', startGame);
-            pauseButton.addEventListener('click', togglePause);
-            restartButton.addEventListener('click', startGame);
+            pauseButton.addEventListener('click', togglePauseWithAd);
+            reviveButton.addEventListener('click', reviveGame);
+            newGameButton.addEventListener('click', startGame);
             
             // Обработчики мобильного управления
             setupMobileControls();
@@ -931,9 +947,6 @@
             if (linesCleared > 0) {
                 // Обновление счета
                 updateScore(linesCleared);
-                
-                // Проверка условий для показа рекламы
-                checkAdConditions();
             }
         }
         
@@ -955,48 +968,9 @@
             }
         }
         
-        // Проверка условий для показа рекламы
-        function checkAdConditions() {
-            if (!isYandexPlatform || !ysdk) return;
-            
-            const currentTime = Date.now();
-            const timeSinceLastAd = currentTime - lastAdShownTime;
-            
-            // Проверяем, прошло ли достаточно времени с последней рекламы
-            if (timeSinceLastAd < AD_SETTINGS.minTimeBetweenAds) return;
-            
-            // Проверяем условия для показа рекламы
-            let shouldShowAd = false;
-            let reason = '';
-            
-            // Проверка по количеству линий
-            if (lines - lastLinesCount >= AD_SETTINGS.showAfterLines) {
-                shouldShowAd = Math.random() < AD_SETTINGS.chanceToShow;
-                reason = `${translations[currentLanguage].deletedLines} ${AD_SETTINGS.showAfterLines}`;
-                lastLinesCount = lines;
-            }
-            // Проверка по уровню
-            else if (level - lastLevel >= AD_SETTINGS.showAfterLevel) {
-                shouldShowAd = Math.random() < AD_SETTINGS.chanceToShow;
-                reason = `${translations[currentLanguage].reachedLevel} ${level}`;
-                lastLevel = level;
-            }
-            // Проверка по очкам
-            else if (score - lastScoreMilestone >= AD_SETTINGS.showAfterScore) {
-                shouldShowAd = Math.random() < AD_SETTINGS.chanceToShow;
-                reason = `${translations[currentLanguage].reachedScore} ${AD_SETTINGS.showAfterScore}`;
-                lastScoreMilestone = score;
-            }
-            
-            // Показываем рекламу, если условия выполнены
-            if (shouldShowAd) {
-                showAd(reason);
-            }
-        }
-        
         // Показать рекламу
         function showAd(reason) {
-            console.log(`Показ рекламы: ${reason}`);
+            console.log(`[LOG_INFO] Показ рекламы: ${reason}`);
             
             // Показываем индикатор рекламы
             adIndicator.style.display = 'block';
@@ -1012,13 +986,10 @@
             ysdk.adv.showFullscreenAdv({
                 callbacks: {
                     onClose: function(wasShown) {
-                        console.log('Реклама закрыта, была показана:', wasShown);
+                        console.log('[LOG_INFO] Реклама закрыта, была показана:', wasShown);
                         
                         // Скрываем индикатор
                         adIndicator.style.display = 'none';
-                        
-                        // Обновляем время последнего показа рекламы
-                        lastAdShownTime = Date.now();
                         
                         // Возобновляем игру, если она не была на паузе до показа рекламы
                         if (!wasPaused && isPaused) {
@@ -1026,7 +997,7 @@
                         }
                     },
                     onError: function(error) {
-                        console.error('Ошибка показа рекламы:', error);
+                        console.error('[LOG_ERROR] Ошибка показа рекламы:', error);
                         
                         // Скрываем индикатор
                         adIndicator.style.display = 'none';
@@ -1064,12 +1035,6 @@
             isGameOver = false;
             isGameStarted = true;
             
-            // Сброс переменных рекламы
-            lastAdShownTime = Date.now();
-            lastLinesCount = 0;
-            lastLevel = 1;
-            lastScoreMilestone = 0;
-            
             scoreElement.textContent = score;
             levelElement.textContent = level;
             linesElement.textContent = lines;
@@ -1082,108 +1047,182 @@
             
             gameOverElement.style.display = 'none';
             pauseButton.textContent = translations[currentLanguage].pauseButton;
-            adIndicator.style.display = 'none';
-            
-            // Уведомляем Яндекс SDK о начале игры
-            if (isYandexPlatform && gameplayAPI) {
-                gameplayAPI.start();
-            }
             
             gameInterval = setInterval(gameLoop, 1000);
-        }
-        
-        // Пауза игры
-        function togglePause() {
-            if (!isGameStarted) return;
             
-            isPaused = !isPaused;
-            pauseButton.textContent = isPaused ? translations[currentLanguage].continueButton : translations[currentLanguage].pauseButton;
-            
-            // Уведомляем Яндекс SDK о паузе/возобновлении
-            if (isYandexPlatform && gameplayAPI) {
-                if (isPaused) {
-                    gameplayAPI.stop();
-                } else {
-                    gameplayAPI.start();
-                }
+            // Показываем рекламу при начале новой игры
+            if (isYandexPlatform) {
+                showAd("новая игра");
             }
         }
         
-        // Конец игры
+        // Пауза/продолжение игры с рекламой
+        function togglePauseWithAd() {
+            if (!isGameStarted || isGameOver) return;
+            
+			togglePause();
+			
+            // Показываем рекламу при нажатии на кнопку Пауза/Продолжить
+            if (isYandexPlatform) {
+                const adReason = isPaused ? "продолжение игры" : "пауза игры";
+                showAd(adReason);
+            }
+        }
+        
+        // Пауза/продолжение игры (без рекламы)
+        function togglePause() {
+            if (!isGameStarted || isGameOver) return;
+            
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                pauseButton.textContent = translations[currentLanguage].continueButton;
+            } else {
+                pauseButton.textContent = translations[currentLanguage].pauseButton;
+            }
+        }
+        
+        // Возрождение после проигрыша
+        function reviveGame() {
+            // Показываем рекламу за возрождение
+            if (isYandexPlatform) {
+                showAd("возрождение");
+            }
+            
+            // Убираем последнюю фигуру, которая вызвала проигрыш
+            for (let row = 0; row < currentPiece.shape.length; row++) {
+                for (let col = 0; col < currentPiece.shape[row].length; col++) {
+                    if (currentPiece.shape[row][col]) {
+                        const boardRow = currentPiece.row + row;
+                        const boardCol = currentPiece.col + col;
+                        
+                        if (boardRow >= 0) {
+                            board[boardRow][boardCol] = EMPTY;
+                        }
+                    }
+                }
+            }
+            
+            // Создаем новую фигуру
+            currentPiece = createPiece();
+            
+            // Проверяем, есть ли место для новой фигуры
+            if (hasCollision(currentPiece)) {
+                // Если все еще нет места, показываем окончательное окно проигрыша
+                gameOver();
+                return;
+            }
+            
+            // Продолжаем игру
+            isGameOver = false;
+            gameOverElement.style.display = 'none';
+            
+            // Возобновляем игровой цикл
+            if (!gameInterval) {
+                gameInterval = setInterval(gameLoop, 1000 - (level - 1) * 100);
+            }
+        }
+        
+        // Завершение игры
         function gameOver() {
             isGameOver = true;
             isGameStarted = false;
             clearInterval(gameInterval);
+            gameInterval = null;
+            
             finalScoreElement.textContent = score;
             gameOverElement.style.display = 'flex';
 			
 			pauseButton.style.visibility = 'hidden'; // прячем кнопку Пауза/Продолжить
-			
-            // Уведомляем Яндекс SDK о завершении игры
-            if (isYandexPlatform && gameplayAPI) {
-                gameplayAPI.stop();
-            }
-            
-            // Показываем рекламу при завершении игры
-            if (isYandexPlatform && ysdk) {
-                ysdk.adv.showFullscreenAdv();
-            }
         }
         
-        // Обработка клавиш
-        function handleKeyDown(e) {
+        // Обработка нажатия клавиш
+        function handleKeyDown(event) {
             if (isGameOver || !isGameStarted) return;
             
-            switch(e.key) {
+            switch(event.key) {
                 case 'ArrowLeft':
-                    e.preventDefault();
+                    event.preventDefault();
                     moveLeft();
                     break;
                 case 'ArrowRight':
-                    e.preventDefault();
+                    event.preventDefault();
                     moveRight();
                     break;
                 case 'ArrowDown':
-                    e.preventDefault();
+                    event.preventDefault();
                     moveDown();
                     break;
                 case 'ArrowUp':
-                    e.preventDefault();
+                    event.preventDefault();
                     rotatePiece();
                     break;
                 case ' ':
-                    e.preventDefault();
-                    togglePause();
+                    event.preventDefault();
+                    togglePauseWithAd(); // Используем версию с рекламой
                     break;
             }
         }
         
         // Настройка мобильного управления
         function setupMobileControls() {
+            // Поворот
             rotateBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                if (!isGameOver && isGameStarted && !isPaused) {
+                if (!isGameOver && !isPaused && isGameStarted) {
                     rotatePiece();
                 }
             });
             
+            // Влево
             leftBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                if (!isGameOver && isGameStarted && !isPaused) {
+                if (!isGameOver && !isPaused && isGameStarted) {
                     moveLeft();
                 }
             });
             
+            // Вниз
             downBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                if (!isGameOver && isGameStarted && !isPaused) {
+                if (!isGameOver && !isPaused && isGameStarted) {
                     moveDown();
                 }
             });
             
+            // Вправо
             rightBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                if (!isGameOver && isGameStarted && !isPaused) {
+                if (!isGameOver && !isPaused && isGameStarted) {
+                    moveRight();
+                }
+            });
+            
+            // Обработка кликов для десктопных устройств
+            rotateBtn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                if (!isGameOver && !isPaused && isGameStarted) {
+                    rotatePiece();
+                }
+            });
+            
+            leftBtn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                if (!isGameOver && !isPaused && isGameStarted) {
+                    moveLeft();
+                }
+            });
+            
+            downBtn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                if (!isGameOver && !isPaused && isGameStarted) {
+                    moveDown();
+                }
+            });
+            
+            rightBtn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                if (!isGameOver && !isPaused && isGameStarted) {
                     moveRight();
                 }
             });
