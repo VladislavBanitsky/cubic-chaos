@@ -33,6 +33,7 @@ const nextBoardElement = document.getElementById('next-board');
 const scoreElement = document.getElementById('score');
 const levelElement = document.getElementById('level');
 const linesElement = document.getElementById('lines');
+const revivalsElement = document.getElementById('revivals');
 const startButton = document.getElementById('start-button');
 const pauseButton = document.getElementById('pause-button');
 const reviveButton = document.getElementById('revive-button');
@@ -54,6 +55,7 @@ let nextPiece = null;
 let score = 0;
 let level = 1;
 let lines = 0;
+let revivals = 0;
 let gameInterval = null;
 let isPaused = false;  // игра сейчас на паузе или нет
 let wasPausedByChangeScreenSize = false;  // игра была поставлена на паузу или нет изменением размера экрана
@@ -68,6 +70,7 @@ const translations = {
 		score: "Очки:",
 		level: "Уровень:",
 		lines: "Линии:",
+		revivals: "Возрождений:",
 		startButton: "Начать игру",
 		pauseButton: "Пауза",
 		continueButton: "Продолжить",
@@ -80,7 +83,7 @@ const translations = {
 		finalScore: "Ваш счет: ",
 		restartButton: "Играть снова",
 		adIndicator: "Реклама",
-		reviveButton: "Возродиться (10 сек реклама)",
+		reviveButton: "Возродиться",
 		newGameButton: "Новая игра",
 		smallScreenTitle: "📱 Слишком маленькое окно",
 		smallScreenMessage: `Для комфортной игры увеличьте размер окна браузера. Минимальный размер: ${SCREEN_WIDTH}×${SCREEN_HEIGHT} пикселей.`
@@ -91,6 +94,7 @@ const translations = {
 		score: "Score:",
 		level: "Level:",
 		lines: "Lines:",
+		revivals: "Revivals:",
 		startButton: "Start Game",
 		pauseButton: "Pause",
 		continueButton: "Continue",
@@ -103,7 +107,7 @@ const translations = {
 		finalScore: "Your score: ",
 		restartButton: "Play Again",
 		adIndicator: "Ad",
-		reviveButton: "Revive (10 sec ad)",
+		reviveButton: "Revive",
 		newGameButton: "New Game",
 		smallScreenTitle: "📱 The window is too small",
 		smallScreenMessage: `For a comfortable game, increase the size of the browser window. Minimum size: ${SCREEN_WIDTH}×${SCREEN_HEIGHT} pixels.`
@@ -291,6 +295,7 @@ function applyTranslations() {
 	document.getElementById('score-label').textContent = t.score;
 	document.getElementById('level-label').textContent = t.level;
 	document.getElementById('lines-label').textContent = t.lines;
+	document.getElementById('revivals-label').textContent = t.revivals;
 	document.getElementById('start-button').textContent = t.startButton;
 	document.getElementById('pause-button').textContent = t.pauseButton;
 	document.getElementById('controls-title').textContent = t.controls;
@@ -718,43 +723,55 @@ function togglePause() {
 
 // Возрождение после проигрыша
 function reviveGame() {
-	// Показываем рекламу за возрождение
-	if (isYandexPlatform) {
-		showAd("возрождение");
-	}
+    // Показываем рекламу за возрождение
+    if (isYandexPlatform) {
+        showAd("возрождение");
+    }
+    
+    // Убираем последнюю фигуру, которая вызвала проигрыш
+    for (let row = 0; row < currentPiece.shape.length; row++) {
+        for (let col = 0; col < currentPiece.shape[row].length; col++) {
+            if (currentPiece.shape[row][col]) {
+                const boardRow = currentPiece.row + row;
+                const boardCol = currentPiece.col + col;
+                
+                if (boardRow >= 0) {
+                    board[boardRow][boardCol] = EMPTY;
+                }
+            }
+        }
+    }
+    
+    // ОЧИСТКА: убираем несколько верхних строк чтобы освободить место
+    for (let row = 0; row < 10; row++) {
+        for (let col = 0; col < BOARD_WIDTH; col++) {
+            board[row][col] = EMPTY;
+        }
+    }
+    
+    // Создаем новую фигуру
+    currentPiece = createPiece();
+    currentPiece.row = 0; // Начинаем сверху
+    
+    // ВОССТАНАВЛИВАЕМ состояние игры
+    isGameOver = false;
+    isGameStarted = true;
+    gameOverElement.style.display = 'none';
+    
+    // Перерисовываем поле
+    renderBoard();
+    
+	pauseButton.style.visibility = 'visible'; // показываем кнопку Пауза/Продолжить
 	
-	// Убираем последнюю фигуру, которая вызвала проигрыш
-	for (let row = 0; row < currentPiece.shape.length; row++) {
-		for (let col = 0; col < currentPiece.shape[row].length; col++) {
-			if (currentPiece.shape[row][col]) {
-				const boardRow = currentPiece.row + row;
-				const boardCol = currentPiece.col + col;
-				
-				if (boardRow >= 0) {
-					board[boardRow][boardCol] = EMPTY;
-				}
-			}
-		}
-	}
-	
-	// Создаем новую фигуру
-	currentPiece = createPiece();
-	
-	// Проверяем, есть ли место для новой фигуры
-	if (hasCollision(currentPiece)) {
-		// Если все еще нет места, показываем окончательное окно проигрыша
-		gameOver();
-		return;
-	}
-	
-	// Продолжаем игру
-	isGameOver = false;
-	gameOverElement.style.display = 'none';
+    revivals++;  // увеличиваем счётчик возрождений
+	scoreElement.textContent = revivals;  // выводим в интерфейс
 	
 	// Возобновляем игровой цикл
-	if (!gameInterval) {
-		gameInterval = setInterval(gameLoop, 1000 - (level - 1) * 100);
-	}
+    if (!gameInterval) {
+        gameInterval = setInterval(gameLoop, 1000 - (level - 1) * 100);
+    }
+    
+    console.log('[LOG_INFO] Игрок возродился');
 }
 
 // Завершение игры
