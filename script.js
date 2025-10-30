@@ -670,6 +670,7 @@ function startGame() {
 	score = 0;
 	level = 1;
 	lines = 0;
+	revivals = 0;
 	isPaused = false;
 	isGameOver = false;
 	isGameStarted = true;
@@ -677,6 +678,7 @@ function startGame() {
 	scoreElement.textContent = score;
 	levelElement.textContent = level;
 	linesElement.textContent = lines;
+	revivalsElement.textContent = revivals;
 	
 	currentPiece = createPiece();
 	nextPiece = createPiece();
@@ -764,7 +766,7 @@ function reviveGame() {
 	pauseButton.style.visibility = 'visible'; // показываем кнопку Пауза/Продолжить
 	
     revivals++;  // увеличиваем счётчик возрождений
-	scoreElement.textContent = revivals;  // выводим в интерфейс
+	revivalsElement.textContent = revivals;  // выводим в интерфейс
 	
 	// Возобновляем игровой цикл
     if (!gameInterval) {
