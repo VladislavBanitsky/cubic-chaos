@@ -56,8 +56,10 @@
         .game-container {
             display: flex;
             gap: 30px;
-            max-width: 675px;
-            width: 100%;
+            max-width: 95vw;
+			max-height: 95vh;
+			width: auto;
+			height: auto;
             background: rgba(0, 0, 0);
             border-radius: 15px;
             padding: 20px;
@@ -65,7 +67,10 @@
         }
         
         .game-board {
-            flex: 1;
+            flex: 0 0 auto;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
         }
         
         .board {
@@ -73,7 +78,8 @@
             grid-template-columns: repeat(10, 1fr);
             grid-template-rows: repeat(20, 1fr);
             gap: 1px;
-            width: 90%;
+            width: auto;
+			height: 95vh;
             aspect-ratio: 1/2;
             background-color: rgba(255, 255, 255, 0.1);
             border: 2px solid rgba(255, 255, 255, 0.3);
@@ -98,6 +104,7 @@
         }
         
         .next-piece {
+			height: 25vh;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             padding: 15px;
@@ -118,6 +125,7 @@
         }
         
         .stats {
+			height: 35vh;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             padding: 15px;
@@ -127,10 +135,11 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
-            font-size: 18px;
+            font-size: min(3vw, 18px);
         }
         
         .controls {
+			height: 25vh;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             padding: 15px;
@@ -138,24 +147,24 @@
         
         .control-item {
             margin-bottom: 8px;
-            font-size: 14px;
+            font-size: min(2.5vw, 14px);
         }
         
         h2 {
             text-align: center;
             margin-bottom: 15px;
-            font-size: 22px;
+            font-size: min(4vw, 22px);
             color: #e94560;
         }
         
         button {
-            padding: 12px;
+            padding: 6px;
             margin-top: 10px;
             background: #e94560;
             color: white;
             border: none;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: min(3vw, 16px);
             cursor: pointer;
             transition: background 0.3s;
         }
@@ -175,7 +184,8 @@
 		}
 		
 		#pause-button {  /* игра ещё не начата, */
-			visibility: hidden  /* прячем кнопку Пауза/Продолжить */
+			visibility: hidden;  /* прячем кнопку Пауза/Продолжить */
+			margin-top: 10px;
 		}
         
         .game-over {
@@ -194,13 +204,13 @@
         }
         
         .game-over h1 {
-            font-size: 48px;
+            font-size: min(8vw, 48px);
             color: #e94560;
             margin-bottom: 20px;
         }
         
         .game-over div {
-            font-size: 36px;
+            font-size: min(6vw, 36px);
 			font-weight: 500;
             margin-bottom: 30px;
         }
@@ -210,7 +220,7 @@
             gap: 10px;
             margin-top: 20px;
             width: 100%;
-            max-width: 300px;
+            max-width: min(80vw, 300px);
         }
         
         .mobile-btn {
@@ -218,8 +228,8 @@
             border: none;
             border-radius: 10px;
             color: white;
-            font-size: 24px;
-            height: 60px;
+            font-size: min(6vw, 24px);
+			height: min(15vw, 60px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -231,13 +241,6 @@
         
         .mobile-btn:active {
             background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .instructions {
-            margin-top: 20px;
-            font-size: 14px;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.7);
         }
         
         .loading-screen {
@@ -304,42 +307,105 @@
             background: #ff6b81;
         }
         
-        @media (max-width: 768px) {
-            .game-container {
-                flex-direction: column;
-            }
-            
-            .side-panel {
-                width: 100%;
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
-            
-            .next-piece, .stats, .controls {
-                flex: 1;
-                min-width: 150px;
-            }
-            
-            .mobile-controls {
-                display: grid;
-            }
-            
-            .game-over-buttons {
-                flex-direction: column;
-                gap: 10px;
-            }
+		/* Экран для маленьких окон */
+        .small-screen-warning {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            text-align: center;
+            padding: 20px;
         }
-        
-        @media (max-width: 480px) {
-            .mobile-controls {
-                max-width: 250px;
-            }
-            
-            .mobile-btn {
-                height: 50px;
-                font-size: 20px;
-            }
+
+        .small-screen-content {
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
         }
+
+        .small-screen-content h2 {
+            color: #e94560;
+            margin-bottom: 20px;
+            font-size: min(4vw, 28px);
+        }
+
+        .small-screen-content p {
+            margin-bottom: 20px;
+            font-size: min(3vw, 18px);
+            line-height: 1.5;
+        }
+		
+        /* Адаптация для очень маленьких экранов */
+		@media (max-width: 480px) {
+			.game-container {
+				gap: 10px;
+				padding: 10px;
+			}
+			
+			.side-panel {
+				max-width: min(40vw, 180px);
+			}
+			
+			.board {
+				width: min(45vw, 45vh * 0.5, 250px);
+				height: min(90vw, 90vh, 500px);
+			}
+		}
+
+		/* Адаптация для альбомной ориентации на мобильных */
+		@media (max-height: 500px) and (orientation: landscape) {
+			.game-container {
+				flex-direction: row;
+				gap: 10px;
+				padding: 8px;
+			}
+			
+			.board {
+				width: min(35vw, 35vh * 0.5, 200px);
+				height: min(70vw, 70vh, 400px);
+			}
+			
+			.side-panel {
+				max-width: min(25vw, 150px);
+				gap: 10px;
+			}
+			
+			.next-board {
+				width: min(15vw, 80px);
+				height: min(15vw, 80px);
+			}
+			
+			h2 {
+				font-size: min(3vw, 16px);
+				margin-bottom: 8px;
+			}
+			
+			.stat {
+				font-size: min(2.5vw, 14px);
+			}
+			
+			button {
+				padding: 6px;
+				font-size: min(2.5vw, 12px);
+			}
+		}
+
+		/* Адаптация для очень высоких экранов */
+		@media (min-height: 1000px) {
+			.board {
+				width: min(30vw, 350px);
+				height: min(60vw, 700px);
+			}
+		}
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -347,7 +413,15 @@
     <div class="loading-screen" id="loading-screen">
         <div class="loading-spinner"></div>
     </div>
-
+	
+	<!-- Экран для маленьких окон -->
+    <div class="small-screen-warning" id="small-screen-warning">
+        <div class="small-screen-content">
+            <h2 id="small-screen-title">📱 Слишком маленькое окно</h2>
+            <p id="small-screen-message">Для комфортной игры увеличьте размер окна браузера. Минимальный размер: 700×730 пикселей.</p>
+        </div>
+    </div>
+	
     <!-- Индикатор показа рекламы -->
     <div class="ad-indicator" id="ad-indicator">Реклама</div>
 
@@ -382,18 +456,20 @@
                 <h2 id="stats-title">Статистика</h2>
                 <div class="stat">
                     <span id="score-label">Очки:</span>
-                    <span id="score">0</span>
+                    <span id="score"></span>
                 </div>
                 <div class="stat">
                     <span id="level-label">Уровень:</span>
-                    <span id="level">1</span>
+                    <span id="level"></span>
                 </div>
                 <div class="stat">
                     <span id="lines-label">Линии:</span>
-                    <span id="lines">0</span>
+                    <span id="lines"></span>
                 </div>
-                <button id="start-button">Начать игру</button>
-                <button id="pause-button">Пауза</button>
+				<div class="row mx-1 my-1">
+					<button id="start-button">Начать игру</button>
+					<button id="pause-button">Пауза</button>
+				</div>
             </div>
             
             <div class="controls">
@@ -446,7 +522,9 @@
                 restartButton: "Играть снова",
                 adIndicator: "Реклама",
                 reviveButton: "Возродиться (10 сек реклама)",
-                newGameButton: "Новая игра"
+                newGameButton: "Новая игра",
+				smallScreenTitle: "📱 Слишком маленькое окно",
+				smallScreenMessage: "Для комфортной игры увеличьте размер окна браузера. Минимальный размер: 700×730 пикселей."
             },
             en: {
                 nextPiece: "Next",
@@ -467,12 +545,38 @@
                 restartButton: "Play Again",
                 adIndicator: "Ad",
                 reviveButton: "Revive (10 sec ad)",
-                newGameButton: "New Game"
+                newGameButton: "New Game",
+				smallScreenTitle: "📱 The window is too small",
+				smallScreenMessage: "For a comfortable game, increase the size of the browser window. Minimum size: 700×730 pixels."
             }
         };
 
         // Текущий язык
         let currentLanguage = 'ru';
+		
+		// Функция проверки размера экрана
+        function checkScreenSize() {
+			
+            const smallScreenWarning = document.getElementById('small-screen-warning');
+            const gameContainer = document.querySelector('.game-container');
+            
+            // Проверяем, достаточно ли большой экран
+            const isScreenTooSmall = window.innerWidth < 700 || window.innerHeight < 730;
+			
+            if (isScreenTooSmall) {
+                smallScreenWarning.style.display = 'flex';
+                gameContainer.style.display = 'none';
+				
+				// Принудительно ставим игру на паузу если она запущена
+				if (isGameStarted && !isPaused && !isGameOver) {
+					togglePause();
+				}
+				
+            } else {
+                smallScreenWarning.style.display = 'none';
+                gameContainer.style.display = 'flex';
+            }
+        }
 		
 		// Основная функция загрузки ресурсов
         async function loadAllResources() {
@@ -569,6 +673,9 @@
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
                 
+				// Проверяем размер экрана после загрузки
+				checkScreenSize();
+				
                 // Инициализируем игру после полной загрузки
                 initGame();
             }, 500);
@@ -605,7 +712,7 @@
                     currentLanguage = 'en';
                 }
             }
-			
+
             // Применяем переводы
             applyTranslations();
         }
@@ -631,6 +738,8 @@
             document.getElementById('final-score-text').textContent = t.finalScore;
             document.getElementById('revive-button').textContent = t.reviveButton;
             document.getElementById('new-game-button').textContent = t.newGameButton;
+			document.getElementById('small-screen-title').textContent = t.smallScreenTitle;
+			document.getElementById('small-screen-message').textContent = t.smallScreenMessage;
             
             // Обновляем title страницы
             document.title = currentLanguage === 'ru' ? 'Кубическая мешанина' : 'Cubic Chaos';
@@ -703,6 +812,12 @@
             // Обработка клавиш
             document.addEventListener('keydown', handleKeyDown);
             
+			// Обработчик изменения размера окна
+			window.addEventListener('resize', checkScreenSize);
+			
+			// Первоначальная проверка размера экрана
+			checkScreenSize();
+			
             // Первоначальная отрисовка
             renderBoard();
         }
@@ -757,6 +872,9 @@
         
         // Отрисовка игрового поля
         function renderBoard() {
+			
+			checkScreenSize();  // проверяем размер экрана при каждой отрисовке
+			
             // Очистка поля
             const cells = boardElement.querySelectorAll('.cell');
             cells.forEach(cell => {
