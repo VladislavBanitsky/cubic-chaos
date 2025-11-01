@@ -58,7 +58,6 @@ let lines = 0;
 let revivals = 0;
 let gameInterval = null;
 let isPaused = false;  // игра сейчас на паузе или нет
-let wasPausedByChangeScreenSize = false;  // игра была поставлена на паузу или нет изменением размера экрана
 let isGameOver = false;
 let isGameStarted = false;
 
@@ -84,9 +83,7 @@ const translations = {
 		restartButton: "Играть снова",
 		adIndicator: "Реклама",
 		reviveButton: "Возродиться",
-		newGameButton: "Новая игра",
-		smallScreenTitle: "📱 Слишком маленькое окно",
-		smallScreenMessage: `Для комфортной игры увеличьте размер окна браузера. Минимальный размер: ${SCREEN_WIDTH}×${SCREEN_HEIGHT} пикселей.`
+		newGameButton: "Новая игра"
 	},
 	en: {
 		nextPiece: "Next",
@@ -108,43 +105,9 @@ const translations = {
 		restartButton: "Play Again",
 		adIndicator: "Ad",
 		reviveButton: "Revive",
-		newGameButton: "New Game",
-		smallScreenTitle: "📱 The window is too small",
-		smallScreenMessage: `For a comfortable game, increase the size of the browser window. Minimum size: ${SCREEN_WIDTH}×${SCREEN_HEIGHT} pixels.`
+		newGameButton: "New Game"
 	}
 };
-
-
-
-// Функция проверки размера экрана
-function checkScreenSize() {
-	
-	const smallScreenWarning = document.getElementById('small-screen-warning');
-	const gameContainer = document.querySelector('.game-container');
-	
-	// Проверяем, достаточно ли большой экран
-	const isScreenTooSmall = window.innerWidth < SCREEN_WIDTH || window.innerHeight < SCREEN_HEIGHT;
-	
-	if (isScreenTooSmall) {
-		smallScreenWarning.style.display = 'flex';
-		gameContainer.style.display = 'none';
-		
-		// Принудительно ставим игру на паузу если она запущена
-		if (isGameStarted && !isPaused && !isGameOver) {
-			togglePause();
-			wasPausedByChangeScreenSize = true;  // и запоминаем это, чтобы возобновить игру
-		}
-		
-	} else {
-		// Если игра была поставлена на паузу из-за изменения размера экрана
-		if (wasPausedByChangeScreenSize) {
-			togglePause();  // возобновляем игру
-			wasPausedByChangeScreenSize = false;  // сбрасываем флаг
-		}
-		smallScreenWarning.style.display = 'none';
-		gameContainer.style.display = 'flex';
-	}
-}
 
 // Основная функция загрузки ресурсов
 async function loadAllResources() {
@@ -241,9 +204,6 @@ function hideLoadingScreen() {
 	setTimeout(() => {
 		loadingScreen.style.display = 'none';
 		
-		// Проверяем размер экрана после загрузки
-		checkScreenSize();
-		
 		// Инициализируем игру после полной загрузки
 		initGame();
 	}, 500);
@@ -307,8 +267,6 @@ function applyTranslations() {
 	document.getElementById('final-score-text').textContent = t.finalScore;
 	document.getElementById('revive-button').textContent = t.reviveButton;
 	document.getElementById('new-game-button').textContent = t.newGameButton;
-	document.getElementById('small-screen-title').textContent = t.smallScreenTitle;
-	document.getElementById('small-screen-message').textContent = t.smallScreenMessage;
 	
 	// Обновляем title страницы
 	document.title = currentLanguage === 'ru' ? 'Кубическая мешанина' : 'Cubic Chaos';
@@ -332,12 +290,6 @@ function initGame() {
 	
 	// Обработка клавиш
 	document.addEventListener('keydown', handleKeyDown);
-	
-	// Обработчик изменения размера окна
-	window.addEventListener('resize', checkScreenSize);
-	
-	// Первоначальная проверка размера экрана
-	checkScreenSize();
 	
 	// Первоначальная отрисовка
 	renderBoard();
@@ -393,8 +345,6 @@ function createPiece() {
 
 // Отрисовка игрового поля
 function renderBoard() {
-	
-	checkScreenSize();  // проверяем размер экрана при каждой отрисовке
 	
 	// Очистка поля
 	const cells = boardElement.querySelectorAll('.cell');

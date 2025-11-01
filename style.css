@@ -145,13 +145,13 @@ body::before {
 .stat {
 	display: flex;
 	justify-content: space-between;
-	margin-bottom: 5px;
-	font-size: min(2.5vw, 14px);
+
+	font-size: min(1vw, 14px);
 }
 
 .control-item {
 	margin-bottom: 8px;
-	font-size: min(2.5vw, 14px);
+	font-size: min(1vw, 14px);
 }
 
 h2 {
@@ -312,43 +312,6 @@ button:focus-visible {
 
 .new-game-button:hover {
 	background: #ff6b81;
-}
-
-/* Экран для маленьких окон */
-.small-screen-warning {
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: rgba(0, 0, 0, 0.9);
-	display: none;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	z-index: 1000;
-	text-align: center;
-	padding: 20px;
-}
-
-.small-screen-content {
-	max-width: 500px;
-	background: rgba(255, 255, 255, 0.1);
-	border-radius: 15px;
-	padding: 30px;
-	backdrop-filter: blur(10px);
-}
-
-.small-screen-content h2 {
-	color: #e94560;
-	margin-bottom: 20px;
-	font-size: min(4vw, 28px);
-}
-
-.small-screen-content p {
-	margin-bottom: 20px;
-	font-size: min(3vw, 18px);
-	line-height: 1.5;
 }
 
 /* Адаптация для очень маленьких экранов */
