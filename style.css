@@ -114,7 +114,7 @@ body::before {
 	text-align: center;
 	display: flex;
 	flex-direction: column;
-	height: 25%; /* Занимаем 25% высоты боковой панели */
+	height: 30%; /* Занимаем 25% высоты боковой панели */
 	max-height: 100%;
 }
 
@@ -132,7 +132,7 @@ body::before {
 }
 
 .stats {
-	flex: 1; /* Занимает оставшееся пространство */
+	flex: 0 0 auto;
 	background: rgba(255, 255, 255, 0.1);
 	border-radius: 10px;
 	padding: 15px;
@@ -154,13 +154,12 @@ body::before {
 .stat {
 	display: flex;
 	justify-content: space-between;
-
-	font-size: min(1vw, 14px);
+	font-size: 14px;
 }
 
 .control-item {
 	margin-bottom: 8px;
-	font-size: min(1vw, 14px);
+	font-size: 14px;
 }
 
 h2 {
@@ -378,35 +377,37 @@ button:focus-visible {
 @media (max-width: 768px) {
     .game-container {
         flex-direction: column;
-        height: 100vh;
-        min-height: 90vh;
-        gap: 15px;
+        height: 91vh;
+
+        gap: 5px;
+		padding: 5px;
     }
     
     .side-panel {
         order: -1; /* Перемещаем боковую панель вверх */
         width: 100%;
         flex-direction: row; /* Горизонтальное расположение в строку */
-        gap: 15px;
+        gap: 8px;
         margin-bottom: 0;
         height: auto;
         justify-content: space-between;
+		padding: 0;
     }
     
     .next-piece {
         flex: 0 0 auto;
         width: 30vw;
-        height: 27vh;
+        height: min(22vh, 130px);
 		max-height: 200px;
-        padding: 10px;
+        padding: 5px;
     }
     
     .stats {
         flex: 1;
 		width: 25vw;
-        height: 27vh;
+        height: min(22vh, 130px);
 		max-height: 200px;
-        padding: 10px;
+        padding: 5px;
         margin: 0 10px;
     }
     
@@ -414,10 +415,18 @@ button:focus-visible {
         display: none !important; /* Скрываем блок управления */
     }
     
+	.main-game-area {
+        flex: 1;
+        justify-content: space-between;
+        gap: 5px; /* Уменьшаем зазор внутри основного контейнера */
+        padding: 0;
+        margin: 0;
+    }
+	
     .board {
         width: 95%;
         aspect-ratio: 1/2;
-        max-height: 60vh;
+        max-height: 65vh;
     }
     
     .next-board {
@@ -429,7 +438,7 @@ button:focus-visible {
     .mobile-controls {
         display: grid !important;
 		grid-template-columns: repeat(4, 1fr);
-
+		padding: 5px 0 0 0; /* Минимальный отступ сверху */
     }
     
     h2 {
@@ -522,10 +531,18 @@ button:focus-visible {
 }
 
 /* Специально для Nest Hub Next (1024x600) */
-@media (max-width: 1024px) {
+@media (width: 1024px) {
     
     .mobile-controls {
         display: grid !important;
+    }
+	
+	.next-piece {
+        height: 40vh;
+    }
+    
+    .stats {
+		height: 30vh;
     }
 
 }
