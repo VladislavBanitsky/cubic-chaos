@@ -16,28 +16,27 @@
     <!-- Индикатор показа рекламы -->
     <div class="ad-indicator" id="ad-indicator">Реклама</div>
 
-    <div class="game-container">
-        <div class="">
-            <div class="container board" id="board"></div>
-            <div class="container mobile-controls">
-				<div class="row">
-					<div class="col-3 d-grid gap-2">
-						<button class="mobile-btn rotate-btn">↻</button>
-					</div>
-					<div class="col-3 d-grid gap-2">
-						<button class="mobile-btn left-btn">←</button>
-					</div>
-					<div class="col-3 d-grid gap-2">
-						<button class="mobile-btn down-btn">↓</button>
-					</div>
-					<div class="col-3 d-grid gap-2">
-						<button class="mobile-btn right-btn">→</button>
-					</div>
+    <div class="game-container">        
+		<!-- Основной контейнер с игровым полем и кнопками -->
+		<div class="main-game-area">
+			<div class="board" id="board"></div>
+			<div class="mobile-controls">
+				<div class="col-3 d-grid gap-2">
+					<button class="mobile-btn rotate-btn">↻</button>
 				</div>
-            </div>
-        </div>
-        
-        <div class="side-panel">
+				<div class="col-3 d-grid gap-2">
+					<button class="mobile-btn left-btn">←</button>
+				</div>
+				<div class="col-3 d-grid gap-2">
+					<button class="mobile-btn down-btn">↓</button>
+				</div>
+				<div class="col-3 d-grid gap-2">
+					<button class="mobile-btn right-btn">→</button>
+				</div>
+			</div>
+		</div>
+		<!-- Боковая панель для показа следующей фигуры, статистики, кнопок -->
+		<div class="side-panel">
             <div class="next-piece">
                 <h2 id="next-piece-title">Следующая</h2>
                 <div class="next-board" id="next-board"></div>

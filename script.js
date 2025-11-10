@@ -61,6 +61,9 @@ let isPaused = false;  // игра сейчас на паузе или нет
 let isGameOver = false;
 let isGameStarted = false;
 
+// Для определения сенсорных устройств
+let isTouchDevice = false;
+
 // Тексты для разных языков
 const translations = {
 	ru: {
@@ -126,6 +129,22 @@ async function loadAllResources() {
 		// Даже при ошибке скрываем экран загрузки
 		hideLoadingScreen();
 	}
+}
+
+// Функция для определения touch-устройства
+function detectTouchDevice() {
+    isTouchDevice = 'ontouchstart' in window || 
+                   navigator.maxTouchPoints > 0 || 
+                   navigator.msMaxTouchPoints > 0;
+    
+    // Добавляем класс к body для CSS-селекторов
+    if (isTouchDevice) {
+        document.body.classList.add('touch-device');
+    } else {
+        document.body.classList.add('no-touch-device');
+    }
+    
+    console.log('[LOG_INFO] Touch device detected:', isTouchDevice);
 }
 
 // Загрузка фонового изображения
@@ -276,6 +295,7 @@ function applyTranslations() {
 }
 
 function initGame() {
+	detectTouchDevice();
 	// Инициализация игрового поля
 	initBoard();
 	
@@ -288,12 +308,78 @@ function initGame() {
 	// Обработчики мобильного управления
 	setupMobileControls();
 	
+	// Показываем мобильные кнопки на мобильных устройствах
+	showMobileControls();
+	
 	// Обработка клавиш
 	document.addEventListener('keydown', handleKeyDown);
 	
 	// Первоначальная отрисовка
 	renderBoard();
 }
+
+function showMobileControls() {
+    const mobileControls = document.querySelector('.mobile-controls');
+    const controlsSection = document.querySelector('.controls');
+    
+    // Улучшенная проверка на мобильные устройства и планшеты
+    function isMobileDevice() {
+        // Проверка User Agent для сенсорных устройств
+        const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Nest Hub|SMART-TV|Xbox/i.test(navigator.userAgent);
+        
+        // Проверка на сенсорное устройство (основной критерий)
+        const hasTouch = 'ontouchstart' in window || 
+                        navigator.maxTouchPoints > 0 || 
+                        navigator.msMaxTouchPoints > 0;
+        
+        // Проверка размера экрана
+        const isSmallScreen = window.innerWidth <= 1024;
+        const isShortScreen = window.innerHeight <= 800; // Для Nest Hub (600px)
+        
+        // Специфичные проверки для Nest Hub
+        const isNestHub = window.innerWidth === 1024 && window.innerHeight === 600;
+        const isNestHubLandscape = window.innerWidth === 600 && window.innerHeight === 1024;
+        
+        // Считаем устройство мобильным если:
+        // 1. Это сенсорное устройство ИЛИ
+        // 2. Маленький экран ИЛИ  
+        // 3. Это Nest Hub
+        const shouldShowMobileControls = hasTouch || isSmallScreen || isShortScreen || isNestHub || isNestHubLandscape || isMobileUA;
+        
+        console.log('[LOG_INFO] Device detection:', {
+            userAgent: navigator.userAgent.substring(0, 50),
+            hasTouch,
+            isSmallScreen,
+            isShortScreen,
+            isNestHub,
+            isNestHubLandscape,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            shouldShowMobileControls
+        });
+        
+        return shouldShowMobileControls;
+    }
+    
+    if (isMobileDevice()) {
+        mobileControls.style.display = 'grid';
+        // Скрываем блок управления на мобильных
+        if (controlsSection) {
+            controlsSection.style.display = 'none';
+        }
+        console.log('[LOG_INFO] Мобильные кнопки включены для устройства:', window.innerWidth + 'x' + window.innerHeight);
+    } else {
+        mobileControls.style.display = 'none';
+        // Показываем блок управления на десктопе
+        if (controlsSection) {
+            controlsSection.style.display = 'flex';
+        }
+        console.log('[LOG_INFO] Мобильные кнопки отключены, блок управления показан');
+    }
+}
+
+// Обработку изменения размера окна
+window.addEventListener('resize', showMobileControls);
 
 // Инициализация игрового поля
 function initBoard() {
@@ -741,7 +827,7 @@ function gameOver() {
 
 // Обработка нажатия клавиш
 function handleKeyDown(event) {
-	if (isGameOver || !isGameStarted) return;
+	if (isGameOver || !isGameStarted || isPaused) return;
 	
 	switch(event.key) {
 		case 'ArrowLeft':
@@ -769,64 +855,190 @@ function handleKeyDown(event) {
 
 // Настройка мобильного управления
 function setupMobileControls() {
-	// Поворот
-	rotateBtn.addEventListener('touchstart', (e) => {
-		e.preventDefault();
-		if (!isGameOver && !isPaused && isGameStarted) {
-			rotatePiece();
+    let moveInterval = null;
+    let rotateInterval = null;
+    let isMoving = false;
+    let isRotating = false;
+    
+    // Функция для непрерывного движения
+    function startContinuousMove(direction) {
+        if (isMoving) return;
+        
+        isMoving = true;
+        let delay = 100; // Начальная задержка
+        let acceleration = 0;
+        
+        // Первое движение сразу
+        direction();
+        
+        function move() {
+            if (!isMoving) return;
+            direction();
+            
+            // Ускорение после нескольких повторений
+            acceleration++;
+            if (acceleration > 1) {
+                delay = Math.max(50, delay - 10); // Минимальная задержка 50мс
+            }
+        }
+        
+        // Запускаем интервал
+        moveInterval = setInterval(move, delay);
+    }
+    
+    function stopContinuousMove() {
+        isMoving = false;
+        if (moveInterval) {
+            clearInterval(moveInterval);
+            moveInterval = null;
+        }
+    }
+    
+    // Функция для непрерывного поворота
+	function startContinuousRotate() {
+		if (isRotating) return;
+		
+		isRotating = true;
+		let delay = 200; // Задержка для поворота
+		let lastRotateTime = 0;
+		
+		function rotate() {
+			if (!isRotating) return;
+			
+			const now = Date.now();
+			// Защита от слишком частого поворота
+			if (now - lastRotateTime >= 100) { // Минимум 100мс между поворотами
+				rotatePiece();
+				lastRotateTime = now;
+			}
 		}
-	});
-	
-	// Влево
-	leftBtn.addEventListener('touchstart', (e) => {
-		e.preventDefault();
-		if (!isGameOver && !isPaused && isGameStarted) {
-			moveLeft();
-		}
-	});
-	
-	// Вниз
-	downBtn.addEventListener('touchstart', (e) => {
-		e.preventDefault();
-		if (!isGameOver && !isPaused && isGameStarted) {
-			moveDown();
-		}
-	});
-	
-	// Вправо
-	rightBtn.addEventListener('touchstart', (e) => {
-		e.preventDefault();
-		if (!isGameOver && !isPaused && isGameStarted) {
-			moveRight();
-		}
-	});
-	
-	// Обработка кликов для десктопных устройств
-	rotateBtn.addEventListener('mousedown', (e) => {
-		e.preventDefault();
-		if (!isGameOver && !isPaused && isGameStarted) {
-			rotatePiece();
-		}
-	});
-	
-	leftBtn.addEventListener('mousedown', (e) => {
-		e.preventDefault();
-		if (!isGameOver && !isPaused && isGameStarted) {
-			moveLeft();
-		}
-	});
-	
-	downBtn.addEventListener('mousedown', (e) => {
-		e.preventDefault();
-		if (!isGameOver && !isPaused && isGameStarted) {
-			moveDown();
-		}
-	});
-	
-	rightBtn.addEventListener('mousedown', (e) => {
-		e.preventDefault();
-		if (!isGameOver && !isPaused && isGameStarted) {
-			moveRight();
-		}
-	});
+		
+		// Первый поворот сразу
+		rotate();
+		
+		// Запускаем интервал
+		rotateInterval = setInterval(rotate, delay);
+	}
+    
+    function stopContinuousRotate() {
+        isRotating = false;
+        if (rotateInterval) {
+            clearInterval(rotateInterval);
+            rotateInterval = null;
+        }
+    }
+    
+    // Обработчики для кнопки поворота (непрерывные)
+    rotateBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (!isGameOver && !isPaused && isGameStarted) {
+            startContinuousRotate();
+        }
+    });
+    
+    rotateBtn.addEventListener('touchend', stopContinuousRotate);
+    rotateBtn.addEventListener('touchcancel', stopContinuousRotate);
+    
+    // Обработчики для кнопки влево
+    leftBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (!isGameOver && !isPaused && isGameStarted) {
+            startContinuousMove(moveLeft);
+        }
+    });
+    
+    leftBtn.addEventListener('touchend', stopContinuousMove);
+    leftBtn.addEventListener('touchcancel', stopContinuousMove);
+    
+    // Обработчики для кнопки вниз
+    downBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (!isGameOver && !isPaused && isGameStarted) {
+            startContinuousMove(moveDown);
+        }
+    });
+    
+    downBtn.addEventListener('touchend', stopContinuousMove);
+    downBtn.addEventListener('touchcancel', stopContinuousMove);
+    
+    // Обработчики для кнопки вправо
+    rightBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (!isGameOver && !isPaused && isGameStarted) {
+            startContinuousMove(moveRight);
+        }
+    });
+    
+    rightBtn.addEventListener('touchend', stopContinuousMove);
+    rightBtn.addEventListener('touchcancel', stopContinuousMove);
+    
+    // Десктоп версия (мышь) для поворота
+    rotateBtn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        if (!isGameOver && !isPaused && isGameStarted) {
+            startContinuousRotate();
+        }
+    });
+    
+    rotateBtn.addEventListener('mouseup', stopContinuousRotate);
+    rotateBtn.addEventListener('mouseleave', stopContinuousRotate);
+    
+    // Десктоп версия для остальных кнопок
+    leftBtn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        if (!isGameOver && !isPaused && isGameStarted) {
+            startContinuousMove(moveLeft);
+        }
+    });
+    
+    leftBtn.addEventListener('mouseup', stopContinuousMove);
+    leftBtn.addEventListener('mouseleave', stopContinuousMove);
+    
+    downBtn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        if (!isGameOver && !isPaused && isGameStarted) {
+            startContinuousMove(moveDown);
+        }
+    });
+    
+    downBtn.addEventListener('mouseup', stopContinuousMove);
+    downBtn.addEventListener('mouseleave', stopContinuousMove);
+    
+    rightBtn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        if (!isGameOver && !isPaused && isGameStarted) {
+            startContinuousMove(moveRight);
+        }
+    });
+    
+    rightBtn.addEventListener('mouseup', stopContinuousMove);
+    rightBtn.addEventListener('mouseleave', stopContinuousMove);
+    
+    // Останавливаем все движения при изменении состояния игры
+    const originalTogglePause = togglePause;
+    togglePause = function() {
+        stopContinuousMove();
+        stopContinuousRotate();
+        originalTogglePause();
+    };
+    
+    const originalGameOver = gameOver;
+    gameOver = function() {
+        stopContinuousMove();
+        stopContinuousRotate();
+        originalGameOver();
+    };
+    
+    // Останавливаем при скрытии окна
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            stopContinuousMove();
+            stopContinuousRotate();
+        }
+    });
+    
+    window.addEventListener('blur', function() {
+        stopContinuousMove();
+        stopContinuousRotate();
+    });
 }

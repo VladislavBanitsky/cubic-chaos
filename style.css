@@ -65,7 +65,7 @@ body::before {
 	height: 100%; /* Занимаем всю высоту контейнера */
 }
 
-.board {
+.board {  /* Игровое поле */
 	display: grid;
 	grid-template-columns: repeat(10, 1fr);
 	grid-template-rows: repeat(20, 1fr);
@@ -78,6 +78,15 @@ body::before {
 	border: 2px solid rgba(255, 255, 255, 0.3);
 	border-radius: 5px;
 	overflow: hidden;
+}
+
+.main-game-area {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    justify-content: space-between;
+	align-items: center;
 }
 
 .cell {
@@ -224,19 +233,23 @@ button:focus-visible {
 .mobile-controls {
 	display: none;
 	gap: 10px;
-	margin-top: 20px;
-	width: 100%;
+	width: auto;
 	max-width: min(80vw, 300px);
+	flex-direction: row;
 	flex-shrink: 0; /* Не сжимается */
+	grid-template-columns: repeat(4, 1fr); /* ← Добавьте это */
+    grid-template-rows: 1fr; /* ← И это */
 }
 
 .mobile-btn {
-	background: rgba(255, 255, 255, 0.2);
+	background: #e94560; /* Основной цвет как у обычных кнопок */
 	border: none;
 	border-radius: 10px;
 	color: white;
 	font-size: min(6vw, 24px);
-	height: min(15vw, 60px);
+	height: min(15vw, 30px);
+	width: 100%;
+	min-width: 36px;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -244,10 +257,48 @@ button:focus-visible {
 	user-select: none;
 	-webkit-user-select: none;
 	touch-action: manipulation;
+	transition: all 0.2s;
+	font-weight: bold;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .mobile-btn:active {
-	background: rgba(255, 255, 255, 0.3);
+	background: #ff6b81; /* Цвет при нажатии как у hover обычных кнопок */
+	transform: scale(0.95);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Можно добавить разные цвета для разных кнопок если нужно */
+.rotate-btn {
+	background: #a29bfe; /* Фиолетовый для поворота */
+}
+
+.rotate-btn:active {
+	background: #b8b2ff;
+}
+
+.left-btn {
+	background: #55efc4; /* Зеленый для влево */
+}
+
+.left-btn:active {
+	background: #74fad4;
+}
+
+.down-btn {
+	background: #fdcb6e; /* Желтый для вниз */
+}
+
+.down-btn:active {
+	background: #ffda95;
+}
+
+.right-btn {
+	background: #fd79a8; /* Розовый для вправо */
+}
+
+.right-btn:active {
+	background: #ff94bb;
 }
 
 .loading-screen {
@@ -314,46 +365,153 @@ button:focus-visible {
 	background: #ff6b81;
 }
 
-/* Адаптация для очень маленьких экранов */
-@media (max-width: 480px) {
-	.game-container {
-		gap: 10px;
-		padding: 10px;
-		height: 90vh; /* Немного уменьшаем высоту на мобильных */
-	}
-	
-	.side-panel {
-		width: min(40vw, 180px);
-	}
+/* Основной игровой контейнер */
+.main-game-area {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    justify-content: space-between;
 }
 
-/* Адаптация для альбомной ориентации на мобильных */
+/* Для мобильных устройств */
+@media (max-width: 768px) {
+    .game-container {
+        flex-direction: column;
+        height: 100vh;
+        min-height: 90vh;
+        gap: 15px;
+    }
+    
+    .side-panel {
+        order: -1; /* Перемещаем боковую панель вверх */
+        width: 100%;
+        flex-direction: row; /* Горизонтальное расположение в строку */
+        gap: 15px;
+        margin-bottom: 0;
+        height: auto;
+        justify-content: space-between;
+    }
+    
+    .next-piece {
+        flex: 0 0 auto;
+        width: 30vw;
+        height: 27vh;
+		max-height: 200px;
+        padding: 10px;
+    }
+    
+    .stats {
+        flex: 1;
+		width: 25vw;
+        height: 27vh;
+		max-height: 200px;
+        padding: 10px;
+        margin: 0 10px;
+    }
+    
+    .controls {
+        display: none !important; /* Скрываем блок управления */
+    }
+    
+    .board {
+        width: 95%;
+        aspect-ratio: 1/2;
+        max-height: 60vh;
+    }
+    
+    .next-board {
+        width: 80px;
+        height: 80px;
+        margin: 5px auto;
+    }
+    
+    .mobile-controls {
+        display: grid !important;
+		grid-template-columns: repeat(4, 1fr);
+
+    }
+    
+    h2 {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+    
+    .stat {
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+    .side-panel {
+        gap: 8px;
+    }
+    
+    .next-piece, .stats {
+        min-height: 100px;
+        padding: 8px;
+    }
+    
+    .next-piece {
+        width: 35%;
+    }
+    
+    .stats {
+        width: 65%;
+        margin: 0 5px;
+    }
+    
+    .next-board {
+        width: 60px;
+        height: 60px;
+    }
+    
+    h2 {
+        font-size: 11px;
+        margin-bottom: 5px;
+    }
+    
+    .stat {
+        font-size: 11px;
+        margin-bottom: 3px;
+    }
+    
+    button {
+        font-size: 11px;
+        padding: 3px 6px;
+        margin-top: 5px;
+    }
+}
+
+/* Для альбомной ориентации на мобильных */
 @media (max-height: 500px) and (orientation: landscape) {
-	.game-container {
-		flex-direction: row;
-		gap: 10px;
-		padding: 8px;
-		height: 90vh;
-	}
-	
-	.side-panel {
-		width: min(25vw, 150px);
-		gap: 10px;
-	}
-	
-	h2 {
-		font-size: min(3vw, 16px);
-		margin-bottom: 8px;
-	}
-	
-	.stat {
-		font-size: min(2.5vw, 14px);
-	}
-	
-	button {
-		padding: 6px;
-		font-size: min(2.5vw, 12px);
-	}
+    .side-panel {
+        gap: 10px;
+    }
+    
+    .next-piece, .stats {
+        min-height: 80px;
+    }
+    
+    .next-board {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .board {
+        max-height: 50vh;
+    }
+    
+    .stat {
+        font-size: 10px;
+    }
+    
+    button {
+        font-size: 10px;
+        padding: 2px 4px;
+    }
 }
 
 /* Адаптация для очень высоких экранов */
@@ -361,4 +519,13 @@ button:focus-visible {
 	.game-container {
 		height: 90vh; /* Ограничиваем высоту на очень высоких экранах */
 	}
+}
+
+/* Специально для Nest Hub Next (1024x600) */
+@media (max-width: 1024px) {
+    
+    .mobile-controls {
+        display: grid !important;
+    }
+
 }
