@@ -119,16 +119,16 @@ body::before {
 }
 
 .next-board {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-            gap: 1px;
-            width: 120px;
-            height: 120px;
-            margin: 10px auto;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 5px;
-            overflow: hidden;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	grid-template-rows: repeat(4, 1fr);
+	gap: 1px;
+	width: 120px;
+	height: 120px;
+	margin: 10px auto;
+	background-color: rgba(255, 255, 255, 0.05);
+	border-radius: 5px;
+	overflow: hidden;
 }
 
 .stats {
@@ -165,14 +165,14 @@ body::before {
 h2 {
 	text-align: center;
 	margin-bottom: 15px;
-	font-size: min(4vw, 22px);
+	font-size: 14px;
 	color: #e94560;
 	flex-shrink: 0; /* Заголовки не сжимаются */
 }
 
 button {
-	padding: 6px;
-	margin-top: 10px;
+	padding: 3px;
+	margin: 0px;
 	background: #e94560;
 	color: white;
 	border: none;
@@ -374,11 +374,20 @@ button:focus-visible {
 }
 
 /* Для мобильных устройств */
+/* Для мобильных устройств - более строгие условия */
+@media (max-width: 768px) and (max-height: 1024px) {
+    .mobile-controls {
+        display: grid !important;
+    }
+    /* остальные стили для мобильных */
+}
+
 @media (max-width: 768px) {
     .game-container {
         flex-direction: column;
-        height: 91vh;
-
+         /* Добавляем безопасный отступ снизу */
+        padding-bottom: max(env(safe-area-inset-bottom), 10px);
+        height: calc(85vh - env(safe-area-inset-bottom, 0px));
         gap: 5px;
 		padding: 5px;
     }
@@ -442,7 +451,7 @@ button:focus-visible {
     }
     
     h2 {
-        font-size: 16px;
+        font-size: 12px;
         margin-bottom: 8px;
     }
     
