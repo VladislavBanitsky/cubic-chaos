@@ -324,57 +324,22 @@ function showMobileControls() {
     
     // Улучшенная проверка на мобильные устройства и планшеты
     function isMobileDevice() {
-        // Проверка User Agent для сенсорных устройств
-        const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Nest Hub|SMART-TV|Xbox/i.test(navigator.userAgent);
-        
-        // Проверка на сенсорное устройство (основной критерий)
-        const hasTouch = 'ontouchstart' in window || 
-                        navigator.maxTouchPoints > 0 || 
-                        navigator.msMaxTouchPoints > 0;
-        
         // Проверка размера экрана
-        const isSmallScreen = window.innerWidth <= 1024;
-        const isShortScreen = window.innerHeight <= 800; // Для Nest Hub (600px)
-        
-        // Специфичные проверки для Nest Hub
-        const isNestHub = window.innerWidth === 1024 && window.innerHeight === 600;
-        const isNestHubLandscape = window.innerWidth === 600 && window.innerHeight === 1024;
-        
-        // Считаем устройство мобильным если:
-        // 1. Это сенсорное устройство ИЛИ
-        // 2. Маленький экран ИЛИ  
-        // 3. Это Nest Hub
-        const shouldShowMobileControls = hasTouch || isSmallScreen || isShortScreen || isNestHub || isNestHubLandscape || isMobileUA;
-        
-        console.log('[LOG_INFO] Device detection:', {
-            userAgent: navigator.userAgent.substring(0, 50),
-            hasTouch,
-            isSmallScreen,
-            isShortScreen,
-            isNestHub,
-            isNestHubLandscape,
-            width: window.innerWidth,
-            height: window.innerHeight,
-            shouldShowMobileControls
-        });
-        
-        return shouldShowMobileControls;
+        return window.innerWidth <= 1280;
     }
     
     if (isMobileDevice()) {
         mobileControls.style.display = 'grid';
-        // Скрываем блок управления на мобильных
+        // Скрываем инструкцию управления на мобильных
         if (controlsSection) {
             controlsSection.style.display = 'none';
         }
-        console.log('[LOG_INFO] Мобильные кнопки включены для устройства:', window.innerWidth + 'x' + window.innerHeight);
     } else {
         mobileControls.style.display = 'none';
-        // Показываем блок управления на десктопе
+        // Показываем инструкцию управления на ПК
         if (controlsSection) {
             controlsSection.style.display = 'flex';
         }
-        console.log('[LOG_INFO] Мобильные кнопки отключены, блок управления показан');
     }
 }
 
