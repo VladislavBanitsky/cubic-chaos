@@ -149,6 +149,7 @@ body::before {
 	border-radius: 10px;
 	padding: 15px;
 	height: 25%; /* Занимаем 25% высоты боковой панели */
+	line-height: 0.9;
 	display: flex;
 	flex-direction: column;
 }
@@ -380,7 +381,7 @@ button:focus-visible {
 }
 
 /* Для мобильных устройств */
-@media (max-width: 768px) {
+@media (max-width: 1000px) {
 	
 	body {
         align-items: flex-start; /* Прижимаем к верху на мобильных */
@@ -429,6 +430,7 @@ button:focus-visible {
     .stats {
         flex: 1;
 		width: 25vw;
+		line-height: 1;
         height: min(22vh, 130px);
 		max-height: 200px;
         padding: 5px;
@@ -574,20 +576,6 @@ button:focus-visible {
     }
 }
 
-/* Адаптация для очень высоких экранов */
-@media (min-height: 1000px) {
-	.game-container {
-		height: 90vh; /* Ограничиваем высоту на очень высоких экранах */
-	}
-	
-	/* Увеличиваем кнопки для лучшего нажатия */
-    .mobile-btn {
-        height: min(18vw, 50px);
-		margin-left: 100px;
-        font-size: min(7vw, 28px);
-    }
-}
-
 /* Специально для Nest Hub Next (1024x600) */
 @media (width: 1024px) {
     
@@ -603,4 +591,30 @@ button:focus-visible {
 		height: 30vh;
     }
 
+}
+
+/* Адаптация для очень высоких экранов */
+@media (min-height: 1000px) {
+	.game-container {
+		height: 90vh;
+	}
+	
+	.next-piece {
+        flex: 0 0 auto;
+        width: 30vw;
+        height: min(22vh, 130px);
+		max-height: 200px;
+        padding: 5px;
+		margin-bottom: 10px;
+    }
+    
+    .stats {
+        flex: 1;
+		line-height: 1;
+		width: 25vw;
+        height: min(22vh, 130px);
+		max-height: 200px;
+        padding: 5px;
+        margin: 0 10px;
+    }
 }
