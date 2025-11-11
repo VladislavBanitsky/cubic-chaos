@@ -131,22 +131,6 @@ async function loadAllResources() {
 	}
 }
 
-// Функция для определения touch-устройства
-function detectTouchDevice() {
-    isTouchDevice = 'ontouchstart' in window || 
-                   navigator.maxTouchPoints > 0 || 
-                   navigator.msMaxTouchPoints > 0;
-    
-    // Добавляем класс к body для CSS-селекторов
-    if (isTouchDevice) {
-        document.body.classList.add('touch-device');
-    } else {
-        document.body.classList.add('no-touch-device');
-    }
-    
-    console.log('[LOG_INFO] Touch device detected:', isTouchDevice);
-}
-
 // Загрузка фонового изображения
 function loadBackgroundImage() {
 	return new Promise((resolve, reject) => {
@@ -259,7 +243,7 @@ function detectLanguage() {
 			currentLanguage = 'en';
 		}
 	}
-
+	currentLanguage = 'en';
 	// Применяем переводы
 	applyTranslations();
 }
@@ -295,7 +279,6 @@ function applyTranslations() {
 }
 
 function initGame() {
-	detectTouchDevice();
 	// Инициализация игрового поля
 	initBoard();
 	
