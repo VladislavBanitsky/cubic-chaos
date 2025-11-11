@@ -16,11 +16,12 @@ body {
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 	display: flex;
 	justify-content: center;
-	align-items: center;
+	align-items: flex-start;
 	min-height: 100vh;
 	background: linear-gradient(135deg, #1a1a2e, #16213e);
 	color: white;
 	padding: 20px;
+	padding-top: 10px;
 	touch-action: manipulation;
 	overflow: hidden; /* Убираем прокрутку страницы */
 }
@@ -54,6 +55,7 @@ body::before {
 	background: rgba(0, 0, 0);
 	border-radius: 15px;
 	padding: 20px;
+	margin-top: 0;
 	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
@@ -236,8 +238,12 @@ button:focus-visible {
 	max-width: min(80vw, 300px);
 	flex-direction: row;
 	flex-shrink: 0; /* Не сжимается */
-	grid-template-columns: repeat(4, 1fr); /* ← Добавьте это */
-    grid-template-rows: 1fr; /* ← И это */
+	grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr;
+	align-items: center; /* Выравнивание по центру */
+    justify-content: center; /* Выравнивание по центру */
+    height: auto; /* Автоматическая высота */
+    margin: 10px 0; /* Отступы сверху и снизу */	
 }
 
 .mobile-btn {
@@ -374,22 +380,31 @@ button:focus-visible {
 }
 
 /* Для мобильных устройств */
-/* Для мобильных устройств - более строгие условия */
-@media (max-width: 768px) and (max-height: 1024px) {
-    .mobile-controls {
-        display: grid !important;
-    }
-    /* остальные стили для мобильных */
-}
-
 @media (max-width: 768px) {
+	
+	body {
+        align-items: flex-start; /* Прижимаем к верху на мобильных */
+        padding-top: 5px;
+    }
+	
+	.loading-spinner {
+		width: 256px;
+		height: 256px;
+		border: 5px solid rgba(255, 255, 255, 0.3);
+		border-top: 5px solid #e94560;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+		margin-bottom: 20px;
+	}
+	
     .game-container {
         flex-direction: column;
-         /* Добавляем безопасный отступ снизу */
+        /* Добавляем безопасный отступ снизу */
         padding-bottom: max(env(safe-area-inset-bottom), 10px);
         height: calc(85vh - env(safe-area-inset-bottom, 0px));
-        gap: 5px;
+		margin-top: 0;
 		padding: 5px;
+        gap: 5px;
     }
     
     .side-panel {
@@ -430,6 +445,7 @@ button:focus-visible {
         gap: 5px; /* Уменьшаем зазор внутри основного контейнера */
         padding: 0;
         margin: 0;
+		min-height: 0; /* Важно для правильного распределения пространства */
     }
 	
     .board {
@@ -447,9 +463,20 @@ button:focus-visible {
     .mobile-controls {
         display: grid !important;
 		grid-template-columns: repeat(4, 1fr);
-		padding: 5px 0 0 0; /* Минимальный отступ сверху */
+		padding: 5px; /* Минимальный отступ сверху */
+		align-self: center; /* Центрируем по горизонтали */
+        flex-shrink: 0; /* Не сжимается */
+        height: auto;
+        align-items: center;
+        justify-content: center;
     }
     
+	/* Увеличиваем кнопки для лучшего нажатия */
+    .mobile-btn {
+        height: min(18vw, 50px);
+        font-size: min(7vw, 28px);
+    }
+	
     h2 {
         font-size: 12px;
         margin-bottom: 8px;
@@ -463,6 +490,15 @@ button:focus-visible {
 
 /* Для очень маленьких экранов */
 @media (max-width: 480px) {
+	
+	body {
+        padding: 10px 5px 5px 5px; /* Меньше отступов, особенно сверху */
+    }
+    
+    .game-container {
+        height: calc(85vh - env(safe-area-inset-bottom, 0px));
+    }
+	
     .side-panel {
         gap: 8px;
     }
@@ -530,6 +566,12 @@ button:focus-visible {
         font-size: 10px;
         padding: 2px 4px;
     }
+	
+	/* Уменьшаем мобильные кнопки в альбомной ориентации */
+    .mobile-btn {
+        height: min(15vw, 20px);
+        font-size: min(6vw, 18px);
+    }
 }
 
 /* Адаптация для очень высоких экранов */
@@ -537,6 +579,13 @@ button:focus-visible {
 	.game-container {
 		height: 90vh; /* Ограничиваем высоту на очень высоких экранах */
 	}
+	
+	/* Увеличиваем кнопки для лучшего нажатия */
+    .mobile-btn {
+        height: min(18vw, 50px);
+		margin-left: 100px;
+        font-size: min(7vw, 28px);
+    }
 }
 
 /* Специально для Nest Hub Next (1024x600) */
