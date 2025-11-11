@@ -243,7 +243,7 @@ function detectLanguage() {
 			currentLanguage = 'en';
 		}
 	}
-	currentLanguage = 'en';
+	
 	// Применяем переводы
 	applyTranslations();
 }
