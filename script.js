@@ -709,10 +709,15 @@ function togglePause() {
 
 // Возрождение после проигрыша
 function reviveGame() {
+	
+	togglePause();  // останавливаем игру
+	
     // Показываем рекламу за возрождение
     if (isYandexPlatform) {
         showAd("возрождение");
     }
+	
+	togglePause();  // запускаем игру
     
     // Убираем последнюю фигуру, которая вызвала проигрыш
     for (let row = 0; row < currentPiece.shape.length; row++) {
