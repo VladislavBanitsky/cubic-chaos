@@ -634,6 +634,43 @@ function showAd(reason) {
 	});
 }
 
+function showRewardedAd() {
+	// Ставим игру на паузу
+	const wasPaused = isPaused;
+	if (!isPaused) {
+		togglePause();
+	}
+	
+	// Показываем рекламу
+	ysdk.adv.showRewardedVideo({
+		callbacks: {
+			onOpen: () => {
+			    console.log('[LOG_INFO] Показ рекламы за возрождение');
+			},
+			onRewarded: () => {
+			    console.log('Rewarded!');
+			},
+			onClose: function(wasShown) {
+				console.log('[LOG_INFO] Реклама закрыта, была показана:', wasShown);
+				
+				// Возобновляем игру, если она не была на паузе до показа рекламы
+				if (!wasPaused && isPaused) {
+					togglePause();
+				}
+			},
+			onError: function(error) {
+				console.error('[LOG_ERROR] Ошибка показа рекламы:', error);
+				
+				// Возобновляем игру, если она не была на паузе до показа рекламы
+				if (!wasPaused && isPaused) {
+					togglePause();
+				}
+			}
+		}
+	});
+	
+}
+
 // Игровой цикл
 function gameLoop() {
 	if (!isPaused && !isGameOver) {
@@ -714,7 +751,7 @@ function reviveGame() {
 	
     // Показываем рекламу за возрождение
     if (isYandexPlatform) {
-        showAd("возрождение");
+        showRewardedAd();
     }
 	
 	togglePause();  // запускаем игру
