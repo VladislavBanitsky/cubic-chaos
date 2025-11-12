@@ -634,43 +634,6 @@ function showAd(reason) {
 	});
 }
 
-function showRewardedAd() {
-	// Ставим игру на паузу
-	const wasPaused = isPaused;
-	if (!isPaused) {
-		togglePause();
-	}
-	
-	// Показываем рекламу
-	ysdk.adv.showRewardedVideo({
-		callbacks: {
-			onOpen: () => {
-			    console.log('[LOG_INFO] Показ рекламы за возрождение');
-			},
-			onRewarded: () => {
-			    console.log('Rewarded!');
-			},
-			onClose: function(wasShown) {
-				console.log('[LOG_INFO] Реклама закрыта, была показана:', wasShown);
-				
-				// Возобновляем игру, если она не была на паузе до показа рекламы
-				if (!wasPaused && isPaused) {
-					togglePause();
-				}
-			},
-			onError: function(error) {
-				console.error('[LOG_ERROR] Ошибка показа рекламы:', error);
-				
-				// Возобновляем игру, если она не была на паузе до показа рекламы
-				if (!wasPaused && isPaused) {
-					togglePause();
-				}
-			}
-		}
-	});
-	
-}
-
 // Игровой цикл
 function gameLoop() {
 	if (!isPaused && !isGameOver) {
@@ -744,19 +707,9 @@ function togglePause() {
 	}
 }
 
-// Возрождение после проигрыша
-function reviveGame() {
-	
-	togglePause();  // останавливаем игру
-	
-    // Показываем рекламу за возрождение
-    if (isYandexPlatform) {
-        showRewardedAd();
-    }
-	
-	togglePause();  // запускаем игру
-    
-    // Убираем последнюю фигуру, которая вызвала проигрыш
+// Функция для очистки игрового поля, если награда была зачислена
+function clearBoard() {
+	// Убираем последнюю фигуру, которая вызвала проигрыш
     for (let row = 0; row < currentPiece.shape.length; row++) {
         for (let col = 0; col < currentPiece.shape[row].length; col++) {
             if (currentPiece.shape[row][col]) {
@@ -800,6 +753,44 @@ function reviveGame() {
     }
     
     console.log('[LOG_INFO] Игрок возродился');
+}
+
+// Возрождение после проигрыша
+function reviveGame() {   
+    if (isYandexPlatform) {
+        // Ставим игру на паузу
+		const wasPaused = isPaused;
+		if (!isPaused) {
+			togglePause();
+		}
+		// Показываем рекламу за возрождение
+		ysdk.adv.showRewardedVideo({
+			callbacks: {
+				onOpen: () => {
+					console.log('[LOG_INFO] Запущен показ рекламы за возрождение');
+				},
+				onRewarded: () => {
+					clearBoard();  // реклама досмотрена, начисляем награду
+				},
+				onClose: function(wasShown) {
+					console.log('[LOG_INFO] Реклама закрыта, была показана:', wasShown);
+					
+					// Возобновляем игру, если она не была на паузе до показа рекламы
+					if (!wasPaused && isPaused) {
+						togglePause();
+					}
+				},
+				onError: function(error) {
+					console.error('[LOG_ERROR] Ошибка показа рекламы:', error);
+					
+					// Возобновляем игру, если она не была на паузе до показа рекламы
+					if (!wasPaused && isPaused) {
+						togglePause();
+					}
+				}
+			}
+		});
+	}
 }
 
 // Завершение игры
