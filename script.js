@@ -85,7 +85,7 @@ const translations = {
 		finalScore: "Ваш счет: ",
 		restartButton: "Играть снова",
 		adIndicator: "Реклама",
-		reviveButton: "Возродиться",
+		reviveButton: "Возродиться за рекламу",
 		newGameButton: "Новая игра"
 	},
 	en: {
@@ -107,7 +107,7 @@ const translations = {
 		finalScore: "Your score: ",
 		restartButton: "Play Again",
 		adIndicator: "Ad",
-		reviveButton: "Revive",
+		reviveButton: "Revive for advertising",
 		newGameButton: "New Game"
 	}
 };
@@ -176,13 +176,13 @@ function initializeYandexSDK() {
 				ysdk = _ysdk;
 				isYandexPlatform = true;
 				console.log('[LOG_INFO] Yandex SDK initialized');
-				
+
 				// Получаем Gameplay API
 				gameplayAPI = ysdk.features.GameplayAPI;
-				
+
 				// Определяем язык через SDK
 				detectLanguage();
-				
+
 				// Сообщаем SDK, что игра загружена
 				ysdk.features.LoadingAPI?.ready?.();
 				resolve();
@@ -243,7 +243,7 @@ function detectLanguage() {
 			currentLanguage = 'en';
 		}
 	}
-	
+
 	// Применяем переводы
 	applyTranslations();
 }
@@ -756,7 +756,7 @@ function clearBoard() {
 }
 
 // Возрождение после проигрыша
-function reviveGame() {   
+function reviveGame() {
     if (isYandexPlatform) {
         // Ставим игру на паузу
 		const wasPaused = isPaused;
@@ -790,6 +790,9 @@ function reviveGame() {
 				}
 			}
 		});
+	}
+	else {
+	    clearBoard();
 	}
 }
 
