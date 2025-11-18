@@ -356,10 +356,10 @@ button:focus-visible {
 }
 
 .revive-button {
-    font-size: min(3vw, 18px);
-    width: 200px;
-    padding: 10px;
-    margin-left: 5px;
+	font-size: min(3vw, 18px);
+	width: 200px;
+	padding: 10px;
+	margin-left: 5px;
 	background: #4CAF50;
 }
 
@@ -368,8 +368,8 @@ button:focus-visible {
 }
 
 .new-game-button {
-    font-size: min(3vw, 18px);
-    width: 200px;
+	font-size: min(3vw, 18px);
+	width: 200px;
 	background: #e94560;
 }
 
@@ -384,6 +384,269 @@ button:focus-visible {
     flex: 1;
     height: 100%;
     justify-content: space-between;
+}
+
+/* Окно статистики */
+.stats-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.stats-content {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 90vw;
+    max-height: 90vh;
+    width: 600px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+    position: relative;
+}
+
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.stats-title {
+	margin: auto;
+    font-size: 24px;
+    color: #e94560;
+    font-weight: bold;
+}
+
+.close-stats {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.close-stats:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.achievements-label {
+	margin: auto
+}
+
+.player-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.name-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+}
+
+.name-input-group label {
+    font-weight: bold;
+    min-width: 120px;
+}
+
+.name-input-group input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 14px;
+}
+
+.name-input-group input:focus {
+    outline: none;
+    border-color: #e94560;
+}
+
+.name-input-group button {
+	height: 30px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #e94560;
+    margin-top: 5px;
+}
+
+.achievements-section {
+    margin-top: 20px;
+}
+
+.achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 300px;
+    margin-top: 15px;
+	padding-right: 5px;
+}
+
+@keyframes fadeInScrollbar {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Кастомный скроллбар для всего модального окна */
+.stats-content::-webkit-scrollbar {
+    width: 10px;
+}
+
+.stats-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.stats-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.stats-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #b8b2ff, #8175ff);
+}
+
+.stats-content::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(135deg, #8a7ffe, #5f4fdb);
+}
+
+/* Для Firefox */
+.stats-content {
+    scrollbar-width: thin;
+    scrollbar-color: #a29bfe rgba(255, 255, 255, 0.05);
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 768px) {
+    .achievements-list::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .stats-content::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .achievements-list {
+        max-height: 250px;
+    }
+}
+
+/* Стили для достижений с учетом скроллбара */
+.achievement-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+    margin-right: 3px; /* Отступ для скроллбара */
+}
+
+.achievement-item.unlocked {
+    border-left: 4px solid #4CAF50;
+}
+
+.achievement-item.locked {
+    border-left: 4px solid #666;
+    opacity: 0.6;
+}
+
+.achievement-icon {
+    font-size: 24px;
+    width: 40px;
+    text-align: center;
+}
+
+.achievement-info {
+    flex: 1;
+}
+
+.achievement-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.achievement-description {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.achievement-status {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-unlocked {
+    color: #4CAF50;
+}
+
+.status-locked {
+    color: #666;
+}
+
+/* Уведомления */
+.notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+    transition: transform 0.3s ease;
+}
+
+.notification.show {
+    transform: translateX(-50%) translateY(0);
 }
 
 /* Для мобильных устройств */
@@ -494,6 +757,40 @@ button:focus-visible {
         font-size: 12px;
         margin-bottom: 5px;
     }
+    
+    /* Адаптация окна статистики для мобильных */
+    .stats-content {
+        padding: 20px;
+        margin: 10px;
+        width: 95vw;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .name-input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .name-input-group label {
+        min-width: auto;
+        margin-bottom: 5px;
+		display: flex;
+		align-items: center
+    }
+    
+    .achievement-item {
+        padding: 10px;
+        gap: 10px;
+    }
+    
+    .achievement-icon {
+        font-size: 20px;
+        width: 30px;
+    }
 }
 
 /* Для очень маленьких экранов */
@@ -544,6 +841,20 @@ button:focus-visible {
         font-size: 11px;
         padding: 3px 6px;
         margin-top: 5px;
+    }
+	
+	.achievements-list {
+        max-height: 200px;
+    }
+    
+    .achievement-item {
+        padding: 12px;
+        gap: 12px;
+    }
+    
+    .achievement-icon {
+        font-size: 20px;
+        width: 35px;
     }
 }
 
@@ -825,7 +1136,7 @@ button:focus-visible {
     }
     
     button {
-        font-size: 9px;
+        font-size: 14px;
         padding: 2px 4px;
         margin-top: 3px;
     }
@@ -840,4 +1151,86 @@ button:focus-visible {
     .game-container {
         max-width: 100vw;
     }
+}
+
+/* Стили для уведомлений о достижениях */
+.achievement-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 1000;
+    max-width: 300px;
+    animation: slideIn 0.5s ease-out;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
+/* Специальные стили для браузеров на WebKit (Chrome, Safari, Edge) */
+@supports (-webkit-overflow-scrolling: touch) {
+    .achievements-list {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Улучшенная анимация для скроллбара */
+.achievements-list::-webkit-scrollbar-thumb {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 rgba(233, 69, 96, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 10px rgba(233, 69, 96, 0.8);
+    }
+    100% {
+        box-shadow: 0 0 0 rgba(233, 69, 96, 0.4);
+    }
+}
+
+/* Отключаем анимацию пульсации при наведении */
+.achievements-list::-webkit-scrollbar-thumb:hover {
+    animation: none;
+}
+
+/* Стили для скроллбара в разных темах */
+@media (prefers-color-scheme: light) {
+    .achievements-list::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+    }
+    
+    .achievements-list::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #e94560, #d43f57);
+    }
+}
+
+/* Плавное появление скроллбара при загрузке */
+@keyframes scrollbarAppear {
+    from {
+        opacity: 0;
+        transform: scaleX(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+}
+
+.achievements-list::-webkit-scrollbar {
+    animation: scrollbarAppear 0.5s ease-out;
 }
