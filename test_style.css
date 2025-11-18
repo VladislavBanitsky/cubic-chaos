@@ -1,0 +1,1236 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	/* Отключаем выделение текста */
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none; /* Safari */
+	-khtml-user-select: none; /* Konqueror HTML */
+	-moz-user-select: none; /* Old versions of Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none; /* Non-prefixed version, currently
+						  supported by Chrome, Edge, Opera and Firefox */
+}
+
+body {
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	min-height: 100vh;
+	background: linear-gradient(135deg, #1a1a2e, #16213e);
+	color: white;
+	padding: 20px;
+	padding-top: 10px;
+	touch-action: manipulation;
+	overflow: hidden; /* Убираем прокрутку страницы */
+}
+
+/* Псевдоэлемент для фона */
+body::before {
+	content: '';
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-image: url(bg.jpg);
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	z-index: -1;
+	/* Оптимизация для браузера */
+	transform: translateZ(0);
+	backface-visibility: hidden;
+	perspective: 1000;
+}
+
+.game-container {
+	display: flex;
+	gap: 30px;
+	max-width: 95vw;
+	max-height: 95vh;
+	width: auto;
+	height: 95vh; /* Фиксируем высоту контейнера */
+	background: rgba(0, 0, 0);
+	border-radius: 15px;
+	padding: 20px;
+	margin-top: 0;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.game-board {
+	flex: 0 0 auto;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	height: 100%; /* Занимаем всю высоту контейнера */
+}
+
+.board {  /* Игровое поле */
+	display: grid;
+	grid-template-columns: repeat(10, 1fr);
+	grid-template-rows: repeat(20, 1fr);
+	gap: 1px;
+	width: 100%;
+	height: 100%; /* Занимаем всю доступную высоту */
+	max-height: 100%;
+	aspect-ratio: 1/2; /* Сохраняем пропорции 1:2 */
+	background-color: rgba(255, 255, 255, 0.1);
+	border: 2px solid rgba(255, 255, 255, 0.3);
+	border-radius: 5px;
+	overflow: hidden;
+}
+
+.main-game-area {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    justify-content: space-between;
+	align-items: center;
+}
+
+.cell {
+	background-color: rgba(255, 255, 255, 0.05);
+	border-radius: 2px;
+}
+
+.filled {
+	border-radius: 3px;
+}
+
+.side-panel {
+	width: 200px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	height: 100%; /* Занимаем всю высоту контейнера */
+}
+
+.next-piece {
+	flex: 0 0 auto;
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 10px;
+	padding: 15px;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	height: 30%; /* Занимаем 25% высоты боковой панели */
+	max-height: 100%;
+}
+
+.next-board {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	grid-template-rows: repeat(4, 1fr);
+	gap: 1px;
+	width: 120px;
+	height: 120px;
+	margin: 10px auto;
+	background-color: rgba(255, 255, 255, 0.05);
+	border-radius: 5px;
+	overflow: hidden;
+}
+
+.stats {
+	flex: 0 0 auto;
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 10px;
+	padding: 15px;
+	display: flex;
+	flex-direction: column;
+	min-height: 0; /* Важно для flex-контейнеров */
+}
+
+.controls {
+	flex: 0 0 auto;
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 10px;
+	padding: 15px;
+	height: 25%; /* Занимаем 25% высоты боковой панели */
+	line-height: 0.9;
+	display: flex;
+	flex-direction: column;
+}
+
+.stat {
+	display: flex;
+	justify-content: space-between;
+	font-size: 14px;
+}
+
+.control-item {
+	margin-bottom: 8px;
+	font-size: 14px;
+}
+
+h2 {
+	text-align: center;
+	margin-bottom: 15px;
+	font-size: 14px;
+	color: #e94560;
+	flex-shrink: 0; /* Заголовки не сжимаются */
+}
+
+button {
+	padding: 3px;
+	margin: 0px;
+	background: #e94560;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	font-size: min(2.5vw, 14px);
+	cursor: pointer;
+	transition: background 0.3s;
+	flex-shrink: 0; /* Кнопки не сжимаются */
+}
+
+button:hover {
+	background: #ff6b81;
+}
+
+button:focus {
+	outline: none;
+	box-shadow: none;
+}
+
+button:focus-visible {
+	outline: 2px solid #e94560;
+	outline-offset: 2px;
+}
+
+#pause-button {  /* игра ещё не начата, */
+	visibility: hidden;  /* прячем кнопку Пауза/Продолжить */
+	margin-top: 5px;
+}
+
+.game-over {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.8);
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	z-index: 10;
+	display: none;
+}
+
+.game-over h1 {
+	font-size: min(8vw, 48px);
+	color: #e94560;
+	margin-bottom: 20px;
+}
+
+.game-over div {
+	font-size: min(6vw, 36px);
+	font-weight: 500;
+	margin-bottom: 30px;
+}
+
+.mobile-controls {
+	display: none;
+	gap: 10px;
+	width: auto;
+	max-width: min(80vw, 300px);
+	flex-direction: row;
+	flex-shrink: 0; /* Не сжимается */
+	grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr;
+	align-items: center; /* Выравнивание по центру */
+    justify-content: center; /* Выравнивание по центру */
+    height: auto; /* Автоматическая высота */
+    margin: 10px 0; /* Отступы сверху и снизу */	
+}
+
+.mobile-btn {
+	background: #e94560; /* Основной цвет как у обычных кнопок */
+	border: none;
+	border-radius: 10px;
+	color: white;
+	font-size: min(6vw, 24px);
+	height: min(15vw, 30px);
+	width: 100%;
+	min-width: 36px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: manipulation;
+	transition: all 0.2s;
+	font-weight: bold;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-btn:active {
+	background: #ff6b81; /* Цвет при нажатии как у hover обычных кнопок */
+	transform: scale(0.95);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Можно добавить разные цвета для разных кнопок если нужно */
+.rotate-btn {
+	background: #a29bfe; /* Фиолетовый для поворота */
+}
+
+.rotate-btn:active {
+	background: #b8b2ff;
+}
+
+.left-btn {
+	background: #55efc4; /* Зеленый для влево */
+}
+
+.left-btn:active {
+	background: #74fad4;
+}
+
+.down-btn {
+	background: #fdcb6e; /* Желтый для вниз */
+}
+
+.down-btn:active {
+	background: #ffda95;
+}
+
+.right-btn {
+	background: #fd79a8; /* Розовый для вправо */
+}
+
+.right-btn:active {
+	background: #ff94bb;
+}
+
+.loading-screen {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(135deg, #1a1a2e, #16213e);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 100;
+	flex-direction: column;
+}
+
+.loading-spinner {
+	width: 512px;
+	height: 512px;
+	border: 5px solid rgba(255, 255, 255, 0.3);
+	border-top: 5px solid #e94560;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+	margin-bottom: 20px;
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
+.ad-indicator {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	background: rgba(233, 69, 96, 0.8);
+	color: white;
+	padding: 5px 10px;
+	border-radius: 15px;
+	font-size: 12px;
+	display: none;
+	z-index: 5;
+}
+
+.game-over-buttons {
+	display: flex;
+	gap: 15px;
+	margin-top: 20px;
+}
+
+.revive-button {
+	font-size: min(3vw, 18px);
+	width: 200px;
+	padding: 10px;
+	margin-left: 5px;
+	background: #4CAF50;
+}
+
+.revive-button:hover {
+	background: #66BB6A;
+}
+
+.new-game-button {
+	font-size: min(3vw, 18px);
+	width: 200px;
+	background: #e94560;
+}
+
+.new-game-button:hover {
+	background: #ff6b81;
+}
+
+/* Основной игровой контейнер */
+.main-game-area {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    justify-content: space-between;
+}
+
+/* Окно статистики */
+.stats-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.stats-content {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 90vw;
+    max-height: 90vh;
+    width: 600px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+    position: relative;
+}
+
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.stats-title {
+	margin: auto;
+    font-size: 24px;
+    color: #e94560;
+    font-weight: bold;
+}
+
+.close-stats {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.close-stats:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.achievements-label {
+	margin: auto
+}
+
+.player-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.name-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+}
+
+.name-input-group label {
+    font-weight: bold;
+    min-width: 120px;
+}
+
+.name-input-group input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 14px;
+}
+
+.name-input-group input:focus {
+    outline: none;
+    border-color: #e94560;
+}
+
+.name-input-group button {
+	height: 30px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #e94560;
+    margin-top: 5px;
+}
+
+.achievements-section {
+    margin-top: 20px;
+}
+
+.achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 300px;
+    margin-top: 15px;
+	padding-right: 5px;
+}
+
+@keyframes fadeInScrollbar {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Кастомный скроллбар для всего модального окна */
+.stats-content::-webkit-scrollbar {
+    width: 10px;
+}
+
+.stats-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.stats-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.stats-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #b8b2ff, #8175ff);
+}
+
+.stats-content::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(135deg, #8a7ffe, #5f4fdb);
+}
+
+/* Для Firefox */
+.stats-content {
+    scrollbar-width: thin;
+    scrollbar-color: #a29bfe rgba(255, 255, 255, 0.05);
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 768px) {
+    .achievements-list::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .stats-content::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .achievements-list {
+        max-height: 250px;
+    }
+}
+
+/* Стили для достижений с учетом скроллбара */
+.achievement-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+    margin-right: 3px; /* Отступ для скроллбара */
+}
+
+.achievement-item.unlocked {
+    border-left: 4px solid #4CAF50;
+}
+
+.achievement-item.locked {
+    border-left: 4px solid #666;
+    opacity: 0.6;
+}
+
+.achievement-icon {
+    font-size: 24px;
+    width: 40px;
+    text-align: center;
+}
+
+.achievement-info {
+    flex: 1;
+}
+
+.achievement-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.achievement-description {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.achievement-status {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-unlocked {
+    color: #4CAF50;
+}
+
+.status-locked {
+    color: #666;
+}
+
+/* Уведомления */
+.notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+    transition: transform 0.3s ease;
+}
+
+.notification.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Для мобильных устройств */
+@media (max-width: 1000px) {
+	
+	body {
+        align-items: flex-start; /* Прижимаем к верху на мобильных */
+        padding-top: 5px;
+    }
+	
+	.loading-spinner {
+		width: 256px;
+		height: 256px;
+		border: 5px solid rgba(255, 255, 255, 0.3);
+		border-top: 5px solid #e94560;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+		margin-bottom: 20px;
+	}
+	
+    .game-container {
+        flex-direction: column;
+        /* Добавляем безопасный отступ снизу */
+        padding-bottom: max(env(safe-area-inset-bottom), 10px);
+        height: calc(85vh - env(safe-area-inset-bottom, 0px));
+		margin-top: 0;
+		padding: 5px;
+        gap: 5px;
+    }
+    
+    .side-panel {
+        order: -1; /* Перемещаем боковую панель вверх */
+        width: 100%;
+        flex-direction: row; /* Горизонтальное расположение в строку */
+        gap: 8px;
+        margin-bottom: 0;
+        height: auto;
+        justify-content: space-between;
+		padding: 0;
+    }
+    
+    .next-piece {
+        flex: 0 0 auto;
+        width: 30vw;
+        height: min(22vh, 130px);
+		max-height: 200px;
+        padding: 5px;
+    }
+    
+    .stats {
+        flex: 1;
+		width: 25vw;
+		line-height: 1;
+        height: min(22vh, 130px);
+		max-height: 200px;
+        padding: 5px;
+        margin: 0 10px;
+    }
+    
+    .controls {
+        display: none !important; /* Скрываем блок управления */
+    }
+    
+	.main-game-area {
+        flex: 1;
+        justify-content: space-between;
+        gap: 5px; /* Уменьшаем зазор внутри основного контейнера */
+        padding: 0;
+        margin: 0;
+		min-height: 0; /* Важно для правильного распределения пространства */
+    }
+	
+    .board {
+        width: 95%;
+        aspect-ratio: 1/2;
+        max-height: 65vh;
+    }
+    
+    .next-board {
+        width: 80px;
+        height: 80px;
+        margin: 5px auto;
+    }
+    
+    .mobile-controls {
+        display: grid !important;
+		grid-template-columns: repeat(4, 1fr);
+		padding: 5px; /* Минимальный отступ сверху */
+		align-self: center; /* Центрируем по горизонтали */
+        flex-shrink: 0; /* Не сжимается */
+        height: auto;
+        align-items: center;
+        justify-content: center;
+    }
+    
+	/* Увеличиваем кнопки для лучшего нажатия */
+    .mobile-btn {
+        height: min(18vw, 50px);
+        font-size: min(7vw, 28px);
+    }
+	
+    h2 {
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+    
+    .stat {
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+    
+    /* Адаптация окна статистики для мобильных */
+    .stats-content {
+        padding: 20px;
+        margin: 10px;
+        width: 95vw;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .name-input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .name-input-group label {
+        min-width: auto;
+        margin-bottom: 5px;
+		display: flex;
+		align-items: center
+    }
+    
+    .achievement-item {
+        padding: 10px;
+        gap: 10px;
+    }
+    
+    .achievement-icon {
+        font-size: 20px;
+        width: 30px;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+	
+	body {
+        padding: 10px 5px 5px 5px; /* Меньше отступов, особенно сверху */
+    }
+    
+    .game-container {
+        height: calc(85vh - env(safe-area-inset-bottom, 0px));
+    }
+	
+    .side-panel {
+        gap: 8px;
+    }
+    
+    .next-piece, .stats {
+        min-height: 100px;
+        padding: 8px;
+    }
+    
+    .next-piece {
+        width: 35%;
+    }
+    
+    .stats {
+        width: 65%;
+        margin: 0 5px;
+    }
+    
+    .next-board {
+        width: 60px;
+        height: 60px;
+    }
+    
+    h2 {
+        font-size: 11px;
+        margin-bottom: 5px;
+    }
+    
+    .stat {
+        font-size: 11px;
+        margin-bottom: 3px;
+    }
+    
+    button {
+        font-size: 11px;
+        padding: 3px 6px;
+        margin-top: 5px;
+    }
+	
+	.achievements-list {
+        max-height: 200px;
+    }
+    
+    .achievement-item {
+        padding: 12px;
+        gap: 12px;
+    }
+    
+    .achievement-icon {
+        font-size: 20px;
+        width: 35px;
+    }
+}
+
+/* Для альбомной ориентации на мобильных */
+@media (max-height: 500px) and (orientation: landscape) {
+    .side-panel {
+        gap: 10px;
+    }
+    
+    .next-piece, .stats {
+        min-height: 80px;
+    }
+    
+    .next-board {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .board {
+        max-height: 50vh;
+    }
+    
+    .stat {
+        font-size: 10px;
+    }
+    
+    button {
+        font-size: 10px;
+        padding: 2px 4px;
+    }
+	
+	/* Уменьшаем мобильные кнопки в альбомной ориентации */
+    .mobile-btn {
+        height: min(15vw, 20px);
+        font-size: min(6vw, 18px);
+    }
+}
+
+/* Специально для Nest Hub Next (1024x600) */
+@media (width: 1024px) {
+    
+    .mobile-controls {
+        display: grid !important;
+    }
+	
+	.next-piece {
+        height: 40vh;
+    }
+    
+    .stats {
+		height: 30vh;
+    }
+
+}
+
+/* Адаптация для очень высоких экранов */
+@media (min-height: 1000px) {
+	.game-container {
+		height: 90vh;
+	}
+	
+	.next-piece {
+        flex: 0 0 auto;
+        width: 30vw;
+        height: min(22vh, 130px);
+		max-height: 200px;
+        padding: 5px;
+		margin-bottom: 10px;
+    }
+    
+    .stats {
+        flex: 1;
+		line-height: 1;
+		width: 25vw;
+        height: min(22vh, 130px);
+		max-height: 200px;
+        padding: 5px;
+        margin: 0 10px;
+    }
+}
+
+/* Стили для альбомной ориентации на мобильных устройствах */
+@media (max-width: 1000px) and (orientation: landscape) {
+    body {
+        padding: 5px;
+        align-items: flex-start;
+        overflow: auto;
+    }
+    
+    .game-container {
+        flex-direction: row !important; /* Горизонтальная компоновка в альбомной */
+        width: 100%;
+        height: 90vh;
+        gap: 10px;
+        padding: 5px;
+    }
+    
+    .side-panel {
+        order: 0; /* Возвращаем нормальный порядок */
+        flex-direction: column; /* Вертикальное расположение элементов */
+        width: 30%;
+        height: 100%;
+        gap: 10px;
+        justify-content: flex-start;
+    }
+    
+    .main-game-area {
+        flex: 1;
+        height: 100%;
+        justify-content: space-between;
+    }
+    
+    .board {
+        width: 100%;
+        height: 85%;
+        max-height: none;
+        aspect-ratio: 1/2;
+    }
+    
+    .next-piece {
+        width: 100%;
+        height: 30%;
+        min-height: 120px;
+        padding: 8px;
+    }
+    
+    .stats {
+        width: 100%;
+        height: 40%;
+        min-height: 160px;
+        padding: 8px;
+        margin: 0;
+    }
+    
+    .next-board {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .mobile-controls {
+        width: 100%;
+        max-width: none;
+        margin: 5px 0;
+    }
+    
+    .mobile-btn {
+        height: 40px;
+        font-size: 18px;
+    }
+    
+    h2 {
+        font-size: 12px;
+    }
+    
+    .stat {
+        font-size: 11px;
+    }
+    
+    button {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+}
+
+/* Для очень маленьких экранов в альбомной ориентации */
+@media (max-width: 700px) and (orientation: landscape) {
+    .game-container {
+        height: 85vh;
+    }
+    
+    .side-panel {
+        width: 35%;
+    }
+    
+    .next-piece {
+        height: 25%;
+        min-height: 100px;
+    }
+    
+    .stats {
+        height: 35%;
+        min-height: 140px;
+    }
+    
+    .next-board {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .mobile-btn {
+        height: 35px;
+        font-size: 16px;
+    }
+    
+    h2 {
+        font-size: 11px;
+        margin-bottom: 5px;
+    }
+    
+    .stat {
+        font-size: 10px;
+        margin-bottom: 3px;
+    }
+}
+
+/* Для планшетов в альбомной ориентации */
+@media (min-width: 768px) and (max-width: 1000px) and (orientation: landscape) {
+    .side-panel {
+        width: 25%;
+    }
+    
+    .next-piece {
+        height: 35%;
+    }
+    
+    .stats {
+        height: 45%;
+    }
+    
+    .next-board {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .mobile-btn {
+        height: 45px;
+        font-size: 20px;
+    }
+}
+
+/* Улучшение для очень маленькой высоты */
+@media (max-height: 400px) and (orientation: landscape) {
+    .game-container {
+        height: 95vh;
+    }
+    
+    .side-panel {
+        gap: 5px;
+    }
+    
+    .next-piece, .stats {
+        padding: 5px;
+    }
+    
+    .next-piece {
+        height: 40%;
+    }
+    
+    .stats {
+        height: 50%;
+    }
+    
+    .next-board {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .board {
+        height: 80%;
+    }
+    
+    .mobile-controls {
+        height: 15%;
+    }
+    
+    .mobile-btn {
+        height: 30px;
+        font-size: 14px;
+    }
+    
+    h2 {
+        font-size: 10px;
+        margin-bottom: 3px;
+    }
+    
+    .stat {
+        font-size: 9px;
+        margin-bottom: 2px;
+    }
+    
+    button {
+        font-size: 14px;
+        padding: 2px 4px;
+        margin-top: 3px;
+    }
+}
+
+/* Убираем горизонтальную прокрутку */
+@media (orientation: landscape) {
+    body {
+        overflow-x: hidden;
+    }
+    
+    .game-container {
+        max-width: 100vw;
+    }
+}
+
+/* Стили для уведомлений о достижениях */
+.achievement-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 1000;
+    max-width: 300px;
+    animation: slideIn 0.5s ease-out;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
+/* Специальные стили для браузеров на WebKit (Chrome, Safari, Edge) */
+@supports (-webkit-overflow-scrolling: touch) {
+    .achievements-list {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Улучшенная анимация для скроллбара */
+.achievements-list::-webkit-scrollbar-thumb {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 rgba(233, 69, 96, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 10px rgba(233, 69, 96, 0.8);
+    }
+    100% {
+        box-shadow: 0 0 0 rgba(233, 69, 96, 0.4);
+    }
+}
+
+/* Отключаем анимацию пульсации при наведении */
+.achievements-list::-webkit-scrollbar-thumb:hover {
+    animation: none;
+}
+
+/* Стили для скроллбара в разных темах */
+@media (prefers-color-scheme: light) {
+    .achievements-list::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+    }
+    
+    .achievements-list::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #e94560, #d43f57);
+    }
+}
+
+/* Плавное появление скроллбара при загрузке */
+@keyframes scrollbarAppear {
+    from {
+        opacity: 0;
+        transform: scaleX(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+}
+
+.achievements-list::-webkit-scrollbar {
+    animation: scrollbarAppear 0.5s ease-out;
+}
