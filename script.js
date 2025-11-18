@@ -369,7 +369,7 @@ function detectLanguage() {
 			currentLanguage = 'en';
 		}
 	}
-	currentLanguage = 'en';
+
 	// Применяем переводы
 	applyTranslations();
 }
@@ -1059,7 +1059,7 @@ function togglePause() {
 		pauseButton.textContent = translations[currentLanguage].continueButton;
 	} else {
 		pauseButton.textContent = translations[currentLanguage].pauseButton;
-		statsButton.style.visibility = 'hidden'; // показываем кнопку Статистика
+		statsButton.style.visibility = 'hidden'; // прячем кнопку Статистика
 	}
 }
 
