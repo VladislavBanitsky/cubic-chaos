@@ -299,7 +299,7 @@ function initializeYandexSDK() {
 				// Получаем Gameplay API
 				gameplayAPI = ysdk.features.GameplayAPI;
                 playerAPI = ysdk.getPlayer();
-                leaderboardsAPI = ysdk.getLeaderboards();
+                leaderboardsAPI = ysdk.leaderboards();
 
 				// Определяем язык через SDK
 				detectLanguage();
@@ -1188,7 +1188,7 @@ function gameOver() {
 // Обновление таблицы лидеров
 function updateLeaderboard() {
     if (isYandexPlatform && leaderboardsAPI) {
-        leaderboardsAPI.setLeaderboardScore('bestScore', gameStats.bestScore)
+        leaderboardsAPI.setScore('bestScore', gameStats.bestScore)
             .then(() => {
                 console.log('[LOG_INFO] Таблица лидеров обновлена');
             })
