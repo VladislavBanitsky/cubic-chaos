@@ -356,6 +356,10 @@ button:focus-visible {
 }
 
 .revive-button {
+    font-size: min(3vw, 18px);
+    width: 200px;
+    padding: 10px;
+    margin-left: 5px;
 	background: #4CAF50;
 }
 
@@ -364,6 +368,8 @@ button:focus-visible {
 }
 
 .new-game-button {
+    font-size: min(3vw, 18px);
+    width: 200px;
 	background: #e94560;
 }
 
