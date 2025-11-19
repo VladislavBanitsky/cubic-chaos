@@ -1,8 +1,8 @@
 // Инициализация Яндекс SDK
 let ysdk = null;
 let gameplayAPI = null;
+let player = null;
 let isYandexPlatform = false;
-let playerAPI = null;
 let leaderboardsAPI = null;
 
 // Переменная для отслеживания загрузки ресурсов
@@ -150,16 +150,13 @@ let isGameStarted = false;
 
 // Статистика для сохранения
 let gameStats = {
-    playerName: "Player",
+    playerName: "",
     bestScore: 0,
     totalLines: 0,
     totalGames: 0,
     totalRevivals: 0,
     achievements: []
 };
-
-// Для определения сенсорных устройств
-let isTouchDevice = false;
 
 // Тексты для разных языков
 const translations = {
@@ -194,7 +191,7 @@ const translations = {
 		totalAchievements: "Разблокировано достижений:",
         unlocked: "Разблокировано",
         locked: "Заблокировано",
-        statsButton: "Статистика"
+        statsButton: "Достижения"
 	},
 	en: {
 		nextPiece: "Next",
@@ -227,7 +224,7 @@ const translations = {
 		totalAchievements: "Achievements unlocked:",
         unlocked: "Unlocked",
         locked: "Locked",
-        statsButton: "Statistics"
+        statsButton: "Achievements"
 	}
 };
 
@@ -288,42 +285,62 @@ function loadIcon() {
 
 // Функция инициализации Яндекс SDK
 function initializeYandexSDK() {
-	return new Promise((resolve) => {
-		// Проверяем, находимся ли мы в окружении Яндекс Игр
-		if (typeof YaGames !== 'undefined') {
-			YaGames.init().then(_ysdk => {
-				ysdk = _ysdk;
-				isYandexPlatform = true;
-				console.log('[LOG_INFO] Yandex SDK initialized');
-
+    return new Promise((resolve) => {
+        if (typeof YaGames !== 'undefined') {
+            YaGames.init().then(_ysdk => {
+                ysdk = _ysdk;
+                isYandexPlatform = true;
+                console.log('[LOG_INFO] Yandex SDK initialized');
+				
 				// Получаем Gameplay API
 				gameplayAPI = ysdk.features.GameplayAPI;
-                playerAPI = ysdk.getPlayer();
-                leaderboardsAPI = ysdk.leaderboards();
-
-				// Определяем язык через SDK
-				detectLanguage();
-
-                // Загружаем сохранения
-                loadGameStats();
-
+				
 				// Сообщаем SDK, что игра загружена
-				ysdk.features.LoadingAPI?.ready?.();
-				resolve();
-			}).catch(error => {
-				console.error('[LOG_ERROR] Failed to initialize Yandex SDK:', error);
-				// Если SDK не загрузился, все равно запускаем игру
-				detectLanguage();
-				resolve();
-			});
-		} else {
-			// Если не в Яндекс Играх, сразу запускаем игру
-			detectLanguage();
-            // Загружаем локальные сохранения
+                ysdk.features.LoadingAPI?.ready?.();
+				
+                initPlayer().then(_player => {
+						console.log('[LOG_INFO] Игрок инициализирован:', player);
+				}).catch(err => {
+					console.error('[LOG_ERROR] Ошибка инициализации игрока:', err);
+				});
+						
+				
+                leaderboardsAPI = ysdk.leaderboards;
+
+                // Определяем язык через SDK
+                detectLanguage();
+
+				// ПОЛУЧАЕМ ИМЯ ИГРОКА ИЗ АККАУНТА
+				if (player && player.getName) {
+					const playerName = player.getName();
+					if (playerName && playerName.trim() !== '') {
+						gameStats.playerName = playerName;
+						console.log('[LOG_INFO] Имя игрока получено из аккаунта:', playerName);
+					}
+				}
+				// Загружаем статистику
+				loadGameStats();
+                resolve();
+            }).catch(error => {
+                console.error('[LOG_ERROR] Failed to initialize Yandex SDK:', error);
+                detectLanguage();
+                loadLocalStats();
+                resolve();
+            });
+        } else {
+            detectLanguage();
             loadLocalStats();
-			resolve();
-		}
-	});
+            resolve();
+        }
+    });
+}
+
+function initPlayer() {
+    return ysdk.getPlayer().then(_player => {
+            player = _player;
+
+            return player;
+        });
 }
 
 // Функция скрытия экрана загрузки
@@ -452,7 +469,6 @@ function initGame() {
 
 // Показать окно статистики
 function showStatsModal() {
-	showAd("Просмотр достижений");
     updateStatsDisplay();
     statsModal.style.display = 'flex';
     setTimeout(() => {
@@ -470,27 +486,31 @@ function hideStatsModal() {
 
 // Обновление отображения статистики
 function updateStatsDisplay() {
-    playerNameInput.value = gameStats.playerName;
-    bestScoreElement.textContent = gameStats.bestScore;
-    totalGamesElement.textContent = gameStats.totalGames;
-    totalLinesElement.textContent = gameStats.totalLines;
-    
-    renderAchievements();
+    // Асинхронно загружаем имя игрока
+    getPlayerName();
+	playerNameInput.value = gameStats.playerName;
+	bestScoreElement.textContent = gameStats.bestScore;
+	totalGamesElement.textContent = gameStats.totalGames;
+	totalLinesElement.textContent = gameStats.totalLines;
+	renderAchievements();
 }
 
 // Сохранение имени игрока
 function savePlayerName() {
     const newName = playerNameInput.value.trim();
-    if (newName && newName !== gameStats.playerName) {
-        gameStats.playerName = newName;
-        saveGameStats();
-        showNotification(currentLanguage === 'ru' ? 'Имя сохранено!' : 'Name saved!');
-    }
+	gameStats.playerName = newName;
+	saveGameStats();
+	showNotification(currentLanguage === 'ru' ? 'Имя сохранено!' : 'Name saved!');
 }
 
 // Отображение достижений
 function renderAchievements() {
     achievementsList.innerHTML = '';
+
+    // Инициализируем achievements если их нет
+    if (!gameStats.achievements) {
+        gameStats.achievements = [];
+    }
     
     Object.keys(ACHIEVEMENTS).forEach(achievementKey => {
         const achievementId = ACHIEVEMENTS[achievementKey];
@@ -516,6 +536,9 @@ function renderAchievements() {
         
         achievementsList.appendChild(achievementElement);
     });
+
+    // Обновляем счетчик
+    updateUnlockedAchievementsCount();
 }
 
 // Показать уведомление
@@ -813,6 +836,7 @@ function checkLines() {
 
 // Обновление счета
 function updateScore(linesCleared) {
+	console.log("updateScore");
 	const points = [0, 40, 100, 300, 1200]; // Очки за 0, 1, 2, 3, 4 линии
 	score += points[linesCleared] * level;
 	lines += linesCleared;
@@ -824,6 +848,7 @@ function updateScore(linesCleared) {
 	
 	// Проверяем достижения
 	checkAchievements(linesCleared);
+	updateGameScoreAchiwements();
 	
 	// Обновление скорости игры
 	if (gameInterval) {
@@ -877,15 +902,26 @@ function checkAchievements(linesCleared = 0) {
     newAchievements.forEach(achievement => {
         unlockAchievement(achievement);
     });
+
+    // ДОБАВЛЕНО: Сохраняем статистику после проверки достижений
+    if (newAchievements.length > 0) {
+        saveGameStats();
+        console.log(`[LOG_INFO] Сохранено после разблокировки ${newAchievements.length} достижений`);
+    }
 }
 
 // Проверка есть ли достижение
 function hasAchievement(achievementId) {
-    return gameStats.achievements.includes(achievementId);
+    return gameStats.achievements && gameStats.achievements.includes(achievementId);
 }
 
 // Разблокировка достижения
 function unlockAchievement(achievementId) {
+    // Инициализируем achievements если их нет
+    if (!gameStats.achievements) {
+        gameStats.achievements = [];
+    }
+
     if (!hasAchievement(achievementId)) {
         gameStats.achievements.push(achievementId);
         showAchievementNotification(achievementId);
@@ -989,6 +1025,11 @@ function startGame() {
 	if (gameInterval) {
 		clearInterval(gameInterval);
 	}
+
+	// Инициализируем achievements если их нет
+    if (!gameStats.achievements) {
+        gameStats.achievements = [];
+    }
 	
 	startButton.style.visibility = 'hidden'; // прячем кнопку Начать игру
 	pauseButton.style.visibility = 'visible'; // показываем кнопку Пауза/Продолжить
@@ -1022,6 +1063,8 @@ function startGame() {
 	// Разблокируем достижение первой игры
 	if (!hasAchievement(ACHIEVEMENTS.FIRST_GAME)) {
 		unlockAchievement(ACHIEVEMENTS.FIRST_GAME);
+        // ДОБАВЛЕНО: Сохраняем сразу после разблокировки первого достижения
+        saveGameStats();
 	}
 	
 	// Обновляем статистику
@@ -1156,6 +1199,28 @@ function reviveGame() {
 	}
 }
 
+function updateGameScoreAchiwements(){
+	// Обновляем статистику
+    if (score > gameStats.bestScore) {
+        gameStats.bestScore = score;
+		console.log(gameStats.bestScore);
+    }
+	
+    gameStats.totalLines += lines;
+    console.log(gameStats.totalLines);
+	
+    // Проверяем достижение перфекциониста (игра без возрождений)
+    if (revivals === 0 && score >= 1000 && !hasAchievement(ACHIEVEMENTS.PERFECTIONIST)) {
+        unlockAchievement(ACHIEVEMENTS.PERFECTIONIST);
+    }
+    
+    saveGameStats();
+    
+    // Обновляем таблицу лидеров
+    updateLeaderboard();
+	
+}
+
 // Завершение игры
 function gameOver() {
 	isGameOver = true;
@@ -1168,69 +1233,105 @@ function gameOver() {
 	
 	pauseButton.style.visibility = 'hidden'; // прячем кнопку Пауза/Продолжить
 	
-	// Обновляем статистику
-    if (score > gameStats.bestScore) {
-        gameStats.bestScore = score;
-    }
-    gameStats.totalLines += lines;
-    
-    // Проверяем достижение перфекциониста (игра без возрождений)
-    if (revivals === 0 && score >= 1000 && !hasAchievement(ACHIEVEMENTS.PERFECTIONIST)) {
-        unlockAchievement(ACHIEVEMENTS.PERFECTIONIST);
-    }
-    
-    saveGameStats();
-    
-    // Обновляем таблицу лидеров
-    updateLeaderboard();
+	updateGameScoreAchiwements(); // обновляем игровые достижения
+	
 }
 
 // Обновление таблицы лидеров
 function updateLeaderboard() {
     if (isYandexPlatform && leaderboardsAPI) {
-        leaderboardsAPI.setScore('bestScore', gameStats.bestScore)
-            .then(() => {
-                console.log('[LOG_INFO] Таблица лидеров обновлена');
-            })
-            .catch(error => {
-                console.error('[LOG_ERROR] Ошибка обновления таблицы лидеров:', error);
-            });
+        // Получаем лидерборд по имени
+        const leaderboard = leaderboardsAPI.getLeaderboard('bestScore');
+        leaderboard.then(lb => {
+            return lb.setScore(gameStats.bestScore);
+        }).then(() => {
+            console.log('[LOG_INFO] Таблица лидеров обновлена');
+        }).catch(error => {
+            console.error('[LOG_ERROR] Ошибка обновления таблицы лидеров:', error);
+        });
     }
 }
 
 // Загрузка статистики игры
-function loadGameStats() {
-    if (isYandexPlatform && playerAPI) {
-        playerAPI.getData()
-            .then(data => {
+// Функция загрузки статистики
+async function loadGameStats() {
+    try {
+        if (isYandexPlatform) {
+            // Ждем инициализации player
+            if (!player) {
+                await initPlayer();
+            }
+            
+            if (player) {
+                const data = await player.getData();
                 if (data && data.stats) {
                     gameStats = { ...gameStats, ...data.stats };
-                    console.log('[LOG_INFO] Статистика загружена из облака');
+                    console.log('[LOG_INFO] Данные загружены из Yandex SDK');
                 }
-            })
-            .catch(error => {
-                console.error('[LOG_ERROR] Ошибка загрузки статистики:', error);
-                loadLocalStats();
-            });
-    } else {
-        loadLocalStats();
+            }
+        }
+        
+        // Если данные не загружены из Yandex SDK, загружаем локально
+        if (!gameStats.totalGames) {
+            loadLocalStats();
+        }
+    } catch (error) {
+        console.error('[LOG_ERROR] Ошибка загрузки данных:', error);
+        loadLocalStats(); // Падение на локальное сохранение
     }
 }
 
-// Сохранение статистики игры
-function saveGameStats() {
-    if (isYandexPlatform && playerAPI) {
-        playerAPI.setData({ stats: gameStats })
-            .then(() => {
-                console.log('[LOG_INFO] Статистика сохранена в облако');
-            })
-            .catch(error => {
-                console.error('[LOG_ERROR] Ошибка сохранения статистики:', error);
-                saveLocalStats();
-            });
-    } else {
-        saveLocalStats();
+// Функция для получения имени игрока с приоритетом аккаунта
+function getPlayerName() {
+    // Если в Яндекс Играх, пытаемся получить имя из аккаунта
+    if (isYandexPlatform) {
+		if (player && player.getName) {
+			const accountName = player.getName();
+			if (accountName && accountName.trim() !== '') {
+				gameStats.playerName = accountName;
+				return accountName;
+			}
+		}	
+		return gameStats.playerName;
     }
+
+    // Для других платформ используем сохраненное имя
+    return Promise.resolve(gameStats.playerName);
+}
+
+// Сохранение статистики игры
+
+// Функция сохранения статистики
+async function saveGameStats() {
+    try {
+        if (isYandexPlatform) {
+            // Ждем инициализации player
+            if (!player) {
+                await initPlayer();
+            }
+            
+            if (player) {
+                await player.setData({
+                    stats: gameStats
+                });
+                console.log('[LOG_INFO] Данные сохранены в Yandex SDK');
+            } else {
+                console.warn('[LOG_WARN] Player не инициализирован, сохранение в localStorage');
+                saveLocalStats();
+            }
+        } else {
+            saveLocalStats();
+        }
+    } catch (error) {
+        console.error('[LOG_ERROR] Ошибка сохранения данных:', error);
+        saveLocalStats(); // Падение на локальное сохранение
+    }
+}
+
+// Функция для обновления счетчика разблокированных достижений
+function updateUnlockedAchievementsCount() {
+    const unlockedCount = gameStats.achievements ? gameStats.achievements.length : 0;
+    document.getElementById('unlocked-achievements').textContent = `${unlockedCount}/11`;
 }
 
 // Загрузка локальной статистики
