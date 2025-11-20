@@ -114,10 +114,12 @@ const startButton = document.getElementById('start-button');
 const pauseButton = document.getElementById('pause-button');
 const reviveButton = document.getElementById('revive-button');
 const newGameButton = document.getElementById('new-game-button');
+const menuButton = document.getElementById('menu-button');
 const gameOverElement = document.getElementById('game-over');
 const finalScoreElement = document.getElementById('final-score');
-const adIndicator = document.getElementById('ad-indicator');
 const statsButton = document.getElementById('stats-button');
+const gameContainer = document.getElementById('game-container');
+const mainMenu = document.getElementById('main-menu');
 
 // Кнопки мобильного управления
 const rotateBtn = document.querySelector('.rotate-btn');
@@ -178,7 +180,6 @@ const translations = {
 		gameOver: "Игра окончена!",
 		finalScore: "Ваш счет: ",
 		restartButton: "Играть снова",
-		adIndicator: "Реклама",
 		reviveButton: "Возродиться за рекламу",
 		newGameButton: "Новая игра",
         bestScore: "Лучший счет:",
@@ -211,7 +212,6 @@ const translations = {
 		gameOver: "Game Over!",
 		finalScore: "Your score: ",
 		restartButton: "Play Again",
-		adIndicator: "Ad",
 		reviveButton: "Revive for advertising",
 		newGameButton: "New Game",
         bestScore: "Best Score:",
@@ -418,9 +418,6 @@ function applyTranslations() {
 	// Обновляем title страницы
 	document.title = currentLanguage === 'ru' ? 'Кубическая мешанина' : 'Cubic Chaos';
 	
-	// Обновляем текст индикатора рекламы
-	document.getElementById('ad-indicator').textContent = t.adIndicator;
-	
 	// Обновляем тексты в окне статистики
 	document.getElementById('stats-title-text').textContent = t.statsTitle;
 	document.getElementById('player-name-label').textContent = t.playerName;
@@ -441,6 +438,7 @@ function initGame() {
 	pauseButton.addEventListener('click', togglePauseWithAd);
 	reviveButton.addEventListener('click', reviveGame);
 	newGameButton.addEventListener('click', startGame);
+	menuButton.addEventListener('click', backToMenu);
 	statsButton.addEventListener('click', showStatsModal);
 	
 	// Обработчики окна статистики
@@ -465,6 +463,12 @@ function initGame() {
 	
 	// Первоначальная отрисовка
 	renderBoard();
+}
+
+function backToMenu() {
+    gameContainer.style.display = 'none';
+    gameOverElement.style.display = 'none';
+    mainMenu.style.display = 'flex';
 }
 
 // Показать окно статистики
@@ -974,10 +978,6 @@ function showAchievementNotification(achievementId) {
 function showAd(reason) {
 	console.log(`[LOG_INFO] Показ рекламы: ${reason}`);
 	
-	// Показываем индикатор рекламы
-	adIndicator.style.display = 'block';
-	adIndicator.textContent = `${translations[currentLanguage].adIndicator}: ${reason}`;
-	
 	// Ставим игру на паузу
 	const wasPaused = isPaused;
 	if (!isPaused) {
@@ -990,9 +990,6 @@ function showAd(reason) {
 			onClose: function(wasShown) {
 				console.log('[LOG_INFO] Реклама закрыта, была показана:', wasShown);
 				
-				// Скрываем индикатор
-				adIndicator.style.display = 'none';
-				
 				// Возобновляем игру, если она не была на паузе до показа рекламы
 				if (!wasPaused && isPaused) {
 					togglePause();
@@ -1000,9 +997,6 @@ function showAd(reason) {
 			},
 			onError: function(error) {
 				console.error('[LOG_ERROR] Ошибка показа рекламы:', error);
-				
-				// Скрываем индикатор
-				adIndicator.style.display = 'none';
 				
 				// Возобновляем игру, если она не была на паузе до показа рекламы
 				if (!wasPaused && isPaused) {
@@ -1022,6 +1016,10 @@ function gameLoop() {
 
 // Начало игры
 function startGame() {
+
+	mainMenu.style.display = 'none';
+	gameContainer.style.display = 'flex'; // показываем игровое поле
+
 	if (gameInterval) {
 		clearInterval(gameInterval);
 	}
@@ -1030,10 +1028,6 @@ function startGame() {
     if (!gameStats.achievements) {
         gameStats.achievements = [];
     }
-	
-	startButton.style.visibility = 'hidden'; // прячем кнопку Начать игру
-	pauseButton.style.visibility = 'visible'; // показываем кнопку Пауза/Продолжить
-	statsButton.style.visibility = 'hidden'; // прячем кнопку Статистика
 	
 	initBoard();
 	score = 0;
@@ -1098,11 +1092,9 @@ function togglePause() {
 	isPaused = !isPaused;
 	
 	if (isPaused) {
-		statsButton.style.visibility = 'visible'; // показываем кнопку Статистика
 		pauseButton.textContent = translations[currentLanguage].continueButton;
 	} else {
 		pauseButton.textContent = translations[currentLanguage].pauseButton;
-		statsButton.style.visibility = 'hidden'; // прячем кнопку Статистика
 	}
 }
 

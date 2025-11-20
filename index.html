@@ -11,11 +11,19 @@
     <div class="loading-screen" id="loading-screen">
         <div class="loading-spinner"></div>
     </div>
-	
-    <!-- Индикатор показа рекламы -->
-    <div class="ad-indicator" id="ad-indicator">Реклама</div>
 
-    <div class="game-container">        
+    <!-- Меню -->
+    <div class="main-menu" id="main-menu">
+        <div class="name-input-group">
+            <label for="player-name" id="player-name-label">Имя игрока:</label>
+            <input type="text" id="player-name" maxlength="20">
+            <button id="save-name">Сохранить</button>
+        </div>
+        <button id="start-button">Начать игру</button>
+        <button id="stats-button" style="margin-top: 5px;">Достижения</button>
+    </div>
+
+    <div class="game-container" id="game-container">
 		<!-- Основной контейнер с игровым полем и кнопками -->
 		<div class="main-game-area">
 			<div class="board" id="board"></div>
@@ -39,8 +47,6 @@
             <div class="next-piece">
                 <h2 id="next-piece-title">Следующая</h2>
                 <div class="next-board" id="next-board"></div>
-				<button id="start-button">Начать игру</button>
-                <button id="stats-button" style="margin-top: 5px;">Статистика</button>
             </div>
             
             <div class="stats">
@@ -79,23 +85,16 @@
         <div class="game-over-buttons">
             <button id="revive-button" class="revive-button">Возродиться</button>
             <button id="new-game-button" class="new-game-button">Новая игра</button>
+            <button id="menu-button" class="menu-button">Меню</button>
         </div>
     </div>
     
-    <!-- Окно статистики и достижений -->
+    <!-- Окно достижений -->
     <div class="stats-modal" id="stats-modal">
         <div class="stats-content">
             <div class="stats-header">
                 <h2 class="stats-title" id="stats-title-text">Достижения</h2>
                 <button class="close-stats" id="close-stats">✕</button>
-            </div>
-            
-            <div class="player-info">
-                <div class="name-input-group">
-                    <label for="player-name" id="player-name-label">Имя игрока:</label>
-                    <input type="text" id="player-name" maxlength="20">
-                    <button id="save-name">Сохранить</button>
-                </div>
             </div>
             
             <div class="stats-grid">
