@@ -291,32 +291,41 @@ function initializeYandexSDK() {
                 ysdk = _ysdk;
                 isYandexPlatform = true;
                 console.log('[LOG_INFO] Yandex SDK initialized');
-				
-				// Получаем Gameplay API
-				gameplayAPI = ysdk.features.GameplayAPI;
-				
-				// Сообщаем SDK, что игра загружена
+
+                // Получаем Gameplay API
+                gameplayAPI = ysdk.features.GameplayAPI;
+
+                // Сообщаем SDK, что игра загружена
                 ysdk.features.LoadingAPI?.ready?.();
-				
-                initPlayer().then(_player => {
-						console.log('[LOG_INFO] Игрок инициализирован:', player);
-				}).catch(err => {
-					console.error('[LOG_ERROR] Ошибка инициализации игрока:', err);
-				});
-						
-				
-                leaderboardsAPI = ysdk.leaderboards;
 
                 // Определяем язык через SDK
                 detectLanguage();
-				
-				// Загружаем статистику
-				loadGameStats();
-				
-				// Обновляем данные, имя игрока и т.д.
-				updateStatsDisplay();
-				
-                resolve();
+
+                // Инициализируем игрока и загружаем статистику ПЕРЕД разрешением промиса
+                initPlayer().then(_player => {
+                    console.log('[LOG_INFO] Игрок инициализирован:', player);
+
+                    leaderboardsAPI = ysdk.leaderboards;
+
+                    // Загружаем статистику и только потом разрешаем промис
+                    loadGameStats().then(() => {
+                        console.log('[LOG_INFO] Статистика загружена:', gameStats);
+
+                        // Обновляем данные, имя игрока и т.д.
+                        updateStatsDisplay();
+                        resolve();
+                    }).catch(err => {
+                        console.error('[LOG_ERROR] Ошибка загрузки статистики:', err);
+                        resolve(); // Все равно разрешаем, чтобы игра запустилась
+                    });
+
+                }).catch(err => {
+                    console.error('[LOG_ERROR] Ошибка инициализации игрока:', err);
+                    detectLanguage();
+                    loadLocalStats();
+                    resolve();
+                });
+
             }).catch(error => {
                 console.error('[LOG_ERROR] Failed to initialize Yandex SDK:', error);
                 detectLanguage();
@@ -486,7 +495,6 @@ function hideStatsModal() {
 
 // Обновление отображения статистики
 function updateStatsDisplay() {
-    // Асинхронно загружаем имя игрока
     getPlayerName();
 	console.log(gameStats.playerName);
 	playerNameInput.value = gameStats.playerName;
@@ -1241,51 +1249,57 @@ function updateLeaderboard() {
     }
 }
 
-// Загрузка статистики игры
 // Функция загрузки статистики
 async function loadGameStats() {
-    try {
-        if (isYandexPlatform) {
-            // Ждем инициализации player
-            if (!player) {
-                await initPlayer();
-            }
-            
-            if (player) {
-                const data = await player.getData();
-                if (data && data.stats) {
-                    gameStats = { ...gameStats, ...data.stats };
-                    console.log('[LOG_INFO] Данные загружены из Yandex SDK');
+    return new Promise(async (resolve) => {
+        try {
+            if (isYandexPlatform) {
+                // Ждем инициализации player
+                if (!player) {
+                    await initPlayer();
+                }
+
+                if (player) {
+                    const data = await player.getData();
+                    if (data && data.stats) {
+                        gameStats = { ...gameStats, ...data.stats };
+                        console.log('[LOG_INFO] Данные загружены из Yandex SDK:', gameStats);
+                    }
                 }
             }
+
+            // Если данные не загружены из Yandex SDK, загружаем локально
+            if (!gameStats.totalGames && !gameStats.achievements) {
+                loadLocalStats();
+            }
+
+            resolve();
+        } catch (error) {
+            console.error('[LOG_ERROR] Ошибка загрузки данных:', error);
+            loadLocalStats(); // Падение на локальное сохранение
+            resolve();
         }
-        
-        // Если данные не загружены из Yandex SDK, загружаем локально
-        if (!gameStats.totalGames) {
-            loadLocalStats();
-        }
-    } catch (error) {
-        console.error('[LOG_ERROR] Ошибка загрузки данных:', error);
-        loadLocalStats(); // Падение на локальное сохранение
-    }
+    });
 }
 
 // Функция для получения имени игрока с приоритетом аккаунта
-function getPlayerName() {
+async function getPlayerName() {
     // Если в Яндекс Играх, пытаемся получить имя из аккаунта
     if (gameStats.playerName === "") {
-		if (player && player.getName) {
-			const accountName = player.getName();
-			if (accountName && accountName.trim() !== '') {
-				gameStats.playerName = accountName;
-				return accountName;
-			}
-		}	
-		return Promise.resolve(gameStats.playerName);
-    } 
+        if (player && player.getName) {
+            try {
+                const accountName = player.getName();
+                if (accountName && accountName.trim() !== '') {
+                    gameStats.playerName = accountName;
+                    return accountName;
+                }
+            } catch (error) {
+                console.error('[LOG_ERROR] Ошибка получения имени игрока:', error);
+            }
+        }
+    }
+    return gameStats.playerName;
 }
-
-// Сохранение статистики игры
 
 // Функция сохранения статистики
 async function saveGameStats() {
