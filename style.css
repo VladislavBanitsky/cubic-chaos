@@ -116,8 +116,8 @@ body::before {
 	text-align: center;
 	display: flex;
 	flex-direction: column;
-	height: 30%; /* Занимаем 25% высоты боковой панели */
-	max-height: 100%;
+	height: 25%; /* Занимаем 25% высоты боковой панели */
+	max-width: 100%;
 }
 
 .next-board {
@@ -141,6 +141,7 @@ body::before {
 	display: flex;
 	flex-direction: column;
 	min-height: 0; /* Важно для flex-контейнеров */
+	max-width: 100%;
 }
 
 .controls {
@@ -457,7 +458,10 @@ button:focus-visible {
 
 #start-button {
     height: 100px;
+	width: 300px;
     margin-bottom: 50px;
+	margin-left: auto;
+	margin-right: auto;
     border-radius: 10px;
     font-size: 36px;
     background: RGB(255, 104, 3);
@@ -469,7 +473,10 @@ button:focus-visible {
 
 #stats-button {
     height: 100px;
+	width: 300px;
     margin-bottom: 50px;
+	margin-left: auto;
+	margin-right: auto;
     border-radius: 10px;
     font-size: 36px;
     background: RGB(3, 142, 255);
@@ -588,6 +595,22 @@ button:focus-visible {
 
 /* Адаптивные стили для мобильных устройств */
 @media (max-width: 768px) {
+	
+	#start-button, #stats-button {
+        width: 300px;
+		height: 70px;
+        font-size: 24px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+    }
+	
+	.revive-button, .new-game-button, .menu-button {
+		margin-left: 0px;
+		height: 70px;
+		width: 300px;
+		padding: 0px;
+	}
+	
     .achievements-list::-webkit-scrollbar {
         width: 6px;
     }
@@ -685,7 +708,8 @@ button:focus-visible {
 	
 	.revive-button, .new-game-button, .menu-button {
 		margin-left: 0px;
-		height: 30px;
+		height: 70px;
+		width: 300px;
 		padding: 0px;
 	}
 	
@@ -833,6 +857,14 @@ button:focus-visible {
 /* Для очень маленьких экранов */
 @media (max-width: 480px) {
 	
+	#start-button, #stats-button {
+        width: 300px;
+		height: 70px;
+        font-size: 24px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+    }
+	
 	body {
         padding: 10px 5px 5px 5px; /* Меньше отступов, особенно сверху */
     }
@@ -907,11 +939,15 @@ button:focus-visible {
 	}
 	
 	#start-button, #stats-button {
-        height: 40px;
+        height: 50px;
         font-size: 24px;
         margin-bottom: 20px;
         border-radius: 10px;
     }
+	
+	#stats-button {
+		margin-bottom: 0px;
+	}
 
     .side-panel {
         gap: 10px;
@@ -1140,7 +1176,7 @@ button:focus-visible {
 
 /* Улучшение для очень маленькой высоты */
 @media (max-height: 400px) and (orientation: landscape) {
-    .game-container {
+	.game-container {
         height: 95vh;
     }
     
