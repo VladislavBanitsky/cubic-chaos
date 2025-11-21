@@ -187,7 +187,7 @@ button {
 }
 
 button:hover {
-	background: #ff6b81;
+	background: #ff6b81; 
 }
 
 button:focus {
@@ -360,6 +360,16 @@ button:focus-visible {
 
 .new-game-button:hover {
 	background: #ff6b81;
+}
+
+.menu-button {
+	font-size: min(3vw, 18px);
+	width: 200px;
+	background: #ff7300;
+}
+
+.menu-button:hover {
+	background: #fe9844;
 }
 
 /* Основной игровой контейнер */
@@ -666,7 +676,19 @@ button:focus-visible {
 
 /* Для мобильных устройств */
 @media (max-width: 1000px) {
-
+	
+	.game-over-buttons {
+		display: grid;
+		
+		grid-template-columns: repeat(1, 3fr);
+	}
+	
+	.revive-button, .new-game-button, .menu-button {
+		margin-left: 0px;
+		height: 30px;
+		padding: 0px;
+	}
+	
 	body {
         align-items: flex-start; /* Прижимаем к верху на мобильных */
         padding-top: 5px;
@@ -876,7 +898,15 @@ button:focus-visible {
 /* Для альбомной ориентации на мобильных */
 @media (max-height: 500px) and (orientation: landscape) {
 
-    #start-button, #stats-button {
+	.revive-button, .new-game-button, .menu-button {
+		margin-top: 0px;
+		margin-left: 0px;
+		height: 30px;
+		width: 300px;
+		padding: 0px;
+	}
+	
+	#start-button, #stats-button {
         height: 40px;
         font-size: 24px;
         margin-bottom: 20px;
