@@ -309,17 +309,13 @@ function initializeYandexSDK() {
 
                 // Определяем язык через SDK
                 detectLanguage();
-
-				// ПОЛУЧАЕМ ИМЯ ИГРОКА ИЗ АККАУНТА
-				if (player && player.getName) {
-					const playerName = player.getName();
-					if (playerName && playerName.trim() !== '') {
-						gameStats.playerName = playerName;
-						console.log('[LOG_INFO] Имя игрока получено из аккаунта:', playerName);
-					}
-				}
+				
 				// Загружаем статистику
 				loadGameStats();
+				
+				// Обновляем данные, имя игрока и т.д.
+				updateStatsDisplay();
+				
                 resolve();
             }).catch(error => {
                 console.error('[LOG_ERROR] Failed to initialize Yandex SDK:', error);
@@ -492,6 +488,7 @@ function hideStatsModal() {
 function updateStatsDisplay() {
     // Асинхронно загружаем имя игрока
     getPlayerName();
+	console.log(gameStats.playerName);
 	playerNameInput.value = gameStats.playerName;
 	bestScoreElement.textContent = gameStats.bestScore;
 	totalGamesElement.textContent = gameStats.totalGames;
@@ -1276,7 +1273,7 @@ async function loadGameStats() {
 // Функция для получения имени игрока с приоритетом аккаунта
 function getPlayerName() {
     // Если в Яндекс Играх, пытаемся получить имя из аккаунта
-    if (isYandexPlatform) {
+    if (gameStats.playerName === "") {
 		if (player && player.getName) {
 			const accountName = player.getName();
 			if (accountName && accountName.trim() !== '') {
@@ -1284,11 +1281,8 @@ function getPlayerName() {
 				return accountName;
 			}
 		}	
-		return gameStats.playerName;
-    }
-
-    // Для других платформ используем сохраненное имя
-    return Promise.resolve(gameStats.playerName);
+		return Promise.resolve(gameStats.playerName);
+    } 
 }
 
 // Сохранение статистики игры
