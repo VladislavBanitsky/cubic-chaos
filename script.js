@@ -468,7 +468,7 @@ function initGame() {
 function backToMenu() {
     gameContainer.style.display = 'none';
     gameOverElement.style.display = 'none';
-    mainMenu.style.display = 'flex';
+    mainMenu.style.display = 'grid';
 }
 
 // Показать окно статистики
