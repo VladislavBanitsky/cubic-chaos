@@ -803,6 +803,9 @@ function placePiece() {
 		}
 	}
 	
+	// Сбрасываем текущую фигуру сразу после размещения
+    currentPiece = null;
+	
 	// Проверка заполненных линий
 	checkLines();
 	
