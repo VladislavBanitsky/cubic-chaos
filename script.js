@@ -87,7 +87,7 @@ const ACHIEVEMENT_DETAILS = {
     },
     [ACHIEVEMENTS.PERFECTIONIST]: {
         name: { ru: 'Перфекционист', en: 'Perfectionist' },
-        description: { ru: 'Завершите игру без возрождений', en: 'Complete a game without revivals' },
+        description: { ru: 'Завершите игру со счётом от 1000 очков без возрождений', en: 'Complete a game with a score of at least 1000 points without revivals' },
         icon: '👑'
     }
 };
@@ -239,6 +239,8 @@ async function loadAllResources() {
 		resourcesLoaded = true;
 		// ПРЯМО ЗДЕСЬ вызываем скрытие экрана загрузки
 		hideLoadingScreen();
+		// Сообщаем SDK, что игра загружена
+		ysdk.features.LoadingAPI?.ready?.();
 	} catch (error) {
 		console.error('[LOG_ERROR] Ошибка загрузки ресурсов:', error);
 		resourcesLoaded = true;
@@ -295,9 +297,6 @@ function initializeYandexSDK() {
                 // Получаем Gameplay API
                 gameplayAPI = ysdk.features.GameplayAPI;
 
-                // Сообщаем SDK, что игра загружена
-                ysdk.features.LoadingAPI?.ready?.();
-
                 // Определяем язык через SDK
                 detectLanguage();
 
@@ -325,7 +324,6 @@ function initializeYandexSDK() {
                     loadLocalStats();
                     resolve();
                 });
-
             }).catch(error => {
                 console.error('[LOG_ERROR] Failed to initialize Yandex SDK:', error);
                 detectLanguage();
@@ -343,7 +341,6 @@ function initializeYandexSDK() {
 function initPlayer() {
     return ysdk.getPlayer().then(_player => {
             player = _player;
-
             return player;
         });
 }
@@ -474,6 +471,7 @@ function backToMenu() {
     gameContainer.style.display = 'none';
     gameOverElement.style.display = 'none';
     mainMenu.style.display = 'grid';
+	checkPerfAchiv();
 }
 
 // Показать окно статистики
@@ -1021,7 +1019,7 @@ function gameLoop() {
 
 // Начало игры
 function startGame() {
-
+	
 	mainMenu.style.display = 'none';
 	gameContainer.style.display = 'flex'; // показываем игровое поле
 
@@ -1033,6 +1031,8 @@ function startGame() {
     if (!gameStats.achievements) {
         gameStats.achievements = [];
     }
+	
+	checkPerfAchiv();
 	
 	initBoard();
 	score = 0;
@@ -1205,17 +1205,19 @@ function updateGameScoreAchiwements(){
 	
     gameStats.totalLines += lines;
     console.log(gameStats.totalLines);
-	
-    // Проверяем достижение перфекциониста (игра без возрождений)
-    if (revivals === 0 && score >= 1000 && !hasAchievement(ACHIEVEMENTS.PERFECTIONIST)) {
-        unlockAchievement(ACHIEVEMENTS.PERFECTIONIST);
-    }
     
     saveGameStats();
     
     // Обновляем таблицу лидеров
     updateLeaderboard();
 	
+}
+
+function checkPerfAchiv() {
+	// Проверяем достижение перфекциониста (игра без возрождений)
+    if (revivals === 0 && score >= 1000 && !hasAchievement(ACHIEVEMENTS.PERFECTIONIST)) {
+        unlockAchievement(ACHIEVEMENTS.PERFECTIONIST);
+    }
 }
 
 // Завершение игры
