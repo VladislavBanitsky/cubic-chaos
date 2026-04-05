@@ -11,12 +11,91 @@ let resourcesLoaded = false;
 // Текущий язык
 let currentLanguage = 'ru';
 
+// Пресеты градиентов для фона при разрушении линий
+const GRADIENT_PRESETS = [
+    { primary: '#1a1a2e', secondary: '#16213e', accent: '#0f3460' },      // Тёмно-синий (начальный)
+    { primary: '#2d1b4e', secondary: '#1a1a3e', accent: '#4a0e4e' },      // Фиолетовый
+    { primary: '#1e3a5f', secondary: '#0f2a4a', accent: '#1b5e7a' },      // Глубокий синий
+    { primary: '#3d1e3a', secondary: '#2a1428', accent: '#5a2a4a' },      // Бордовый
+    { primary: '#1a3d2e', secondary: '#0f2a1e', accent: '#2d5a3e' },      // Тёмно-зелёный
+    { primary: '#4a2e1e', secondary: '#3a1f12', accent: '#6b4226' },      // Коричневый
+    { primary: '#2e1e4a', secondary: '#1e123a', accent: '#4a2e6b' },      // Индиго
+    { primary: '#3a1e2e', secondary: '#2a1420', accent: '#5a2e42' },      // Вишнёвый
+    { primary: '#1e3a3a', secondary: '#142a2a', accent: '#2e5a5a' },      // Бирюзовый
+    { primary: '#4a2a1e', secondary: '#3a1f12', accent: '#6b4226' },      // Оранжевый
+    { primary: '#2e2e1e', secondary: '#202012', accent: '#4a4a2e' },      // Оливковый
+    { primary: '#3a1e4a', secondary: '#2a123a', accent: '#5a2e6b' }       // Пурпурный
+];
+
+let currentGradientIndex = 0;
+
+// Функция для плавной смены градиентного фона
+function changeBackgroundGradient(linesCleared) {
+    // Чем больше линий очищено, тем более яркий переход
+    let intensity = Math.min(linesCleared, 4);
+    
+    // Случайный выбор нового градиента, но не тот же самый
+    let newIndex;
+    do {
+        newIndex = Math.floor(Math.random() * GRADIENT_PRESETS.length);
+    } while (newIndex === currentGradientIndex && GRADIENT_PRESETS.length > 1);
+    
+    currentGradientIndex = newIndex;
+    const preset = GRADIENT_PRESETS[currentGradientIndex];
+    
+    // Создаём новый градиент
+    const newGradient = `radial-gradient(circle at 50% 50%, ${preset.primary} 0%, ${preset.secondary} 50%, ${preset.accent} 100%)`;
+    
+    // Добавляем класс для анимации перехода
+    document.body.classList.add('gradient-transition');
+    
+    // Применяем новый градиент
+    document.body.style.background = newGradient;
+    
+    // Убираем класс анимации после завершения
+    setTimeout(() => {
+        document.body.classList.remove('gradient-transition');
+    }, 800);
+    
+    // Добавляем эффект вспышки в зависимости от количества линий
+    if (linesCleared >= 2) {
+        const flashOverlay = document.createElement('div');
+        flashOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+            pointer-events: none;
+            z-index: 100;
+            animation: flashFade 0.5s ease-out forwards;
+        `;
+        document.body.appendChild(flashOverlay);
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes flashFade {
+                0% { opacity: 0.8; transform: scale(0.8); }
+                100% { opacity: 0; transform: scale(1.5); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        setTimeout(() => {
+            flashOverlay.remove();
+            style.remove();
+        }, 500);
+    }
+}
+
 // Константы игры
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
 const EMPTY = 'empty';
 const SCREEN_WIDTH = 700;
 const SCREEN_HEIGHT = 700;
+const MIN_INTERVAL_MS = 150; // для ограничения скорости
 
 // Достижения
 const ACHIEVEMENTS = {
@@ -94,13 +173,13 @@ const ACHIEVEMENT_DETAILS = {
 
 // Фигуры
 const PIECES = [
-	{ shape: [[1, 1, 1, 1]], color: '#00f5ff' }, // I
-	{ shape: [[1, 1], [1, 1]], color: '#ffeaa7' }, // O
-	{ shape: [[0, 1, 0], [1, 1, 1]], color: '#a29bfe' }, // T
-	{ shape: [[1, 1, 0], [0, 1, 1]], color: '#55efc4' }, // S
-	{ shape: [[0, 1, 1], [1, 1, 0]], color: '#fd79a8' }, // Z
-	{ shape: [[1, 0, 0], [1, 1, 1]], color: '#fdcb6e' }, // L
-	{ shape: [[0, 0, 1], [1, 1, 1]], color: '#e17055' }  // J
+	{ shape: [[1, 1, 1, 1]], color: '#00f5ff' }, // I (циановый)
+	{ shape: [[1, 1], [1, 1]], color: '#ffc200' }, // O (янтарный)
+	{ shape: [[0, 1, 0], [1, 1, 1]], color: '#0088ff' }, // T (лазурный)
+	{ shape: [[1, 1, 0], [0, 1, 1]], color: '#87ff00' }, // Z (зелёный)
+	{ shape: [[0, 1, 1], [1, 1, 0]], color: '#ee12a3' }, // S (фуксия)
+	{ shape: [[1, 0, 0], [1, 1, 1]], color: '#9255e0' }, // J (фиолетовый)
+	{ shape: [[0, 0, 1], [1, 1, 1]], color: '#ff4900' }  // L (оранжевый)
 ];
 
 // Элементы DOM
@@ -249,22 +328,14 @@ async function loadAllResources() {
 	}
 }
 
-// Загрузка фонового изображения
+// Загрузка фонового градиента
 function loadBackgroundImage() {
-	return new Promise((resolve, reject) => {
-		const bgImage = new Image();
-		bgImage.src = 'bg.jpg';
-		
-		bgImage.onload = function() {
-			console.log('[LOG_INFO] Фоновое изображение загружено');
-			resolve();
-		};
-		
-		bgImage.onerror = function() {
-			console.warn('[LOG_WARN] Не удалось загрузить фоновое изображение, используется градиентный фон');
-			resolve(); // Все равно разрешаем, чтобы игра запустилась
-		};
-	});
+    return new Promise((resolve) => {
+        // Устанавливаем начальный градиент
+        const preset = GRADIENT_PRESETS[0];
+        document.body.style.background = `radial-gradient(circle at 50% 50%, ${preset.primary} 0%, ${preset.secondary} 50%, ${preset.accent} 100%)`;
+        resolve();
+    });
 }
 
 // Загрузка иконки
@@ -418,7 +489,7 @@ function applyTranslations() {
 	document.getElementById('stats-button').textContent = t.statsButton;
 	
 	// Обновляем title страницы
-	document.title = currentLanguage === 'ru' ? 'Кубическая мешанина' : 'Cubic Chaos';
+	document.title = currentLanguage === 'ru' ? 'Не открывай, кубический джедай' : 'Do not open it, cubic Jedi';
 	
 	// Обновляем тексты в окне статистики
 	document.getElementById('stats-title-text').textContent = t.statsTitle;
@@ -823,25 +894,138 @@ function placePiece() {
 	renderNextPiece();
 }
 
-// Проверка заполненных линий
+// Эффекты при разрушении линий
+function createParticles(row, col, color) {
+	const boardRect = boardElement.getBoundingClientRect();
+	const cells = boardElement.querySelectorAll('.cell');
+	const index = row * BOARD_WIDTH + col;
+	if (cells[index]) {
+		const cellRect = cells[index].getBoundingClientRect();
+		for (let i = 0; i < 8; i++) {
+			const particle = document.createElement('div');
+			particle.className = 'particle';
+			const angle = Math.random() * Math.PI * 2;
+			const distance = 30 + Math.random() * 40;
+			const tx = Math.cos(angle) * distance;
+			const ty = Math.sin(angle) * distance;
+			particle.style.setProperty('--tx', tx + 'px');
+			particle.style.setProperty('--ty', ty + 'px');
+			particle.style.backgroundColor = color;
+			particle.style.width = '4px';
+			particle.style.height = '4px';
+			particle.style.borderRadius = '50%';
+			particle.style.position = 'fixed';
+			particle.style.left = (cellRect.left + cellRect.width / 2) + 'px';
+			particle.style.top = (cellRect.top + cellRect.height / 2) + 'px';
+			document.body.appendChild(particle);
+			setTimeout(() => particle.remove(), 600);
+		}
+	}
+}
+
+function flashCell(row, col) {
+	const cells = boardElement.querySelectorAll('.cell');
+	const index = row * BOARD_WIDTH + col;
+	if (cells[index]) {
+		cells[index].classList.add('flash');
+		setTimeout(() => cells[index].classList.remove('flash'), 150);
+	}
+}
+
+function showLineEffect(row) {
+	const lineElement = document.createElement('div');
+	lineElement.className = 'line-effect';
+	const boardRect = boardElement.getBoundingClientRect();
+	const cellHeight = boardRect.height / BOARD_HEIGHT;
+	lineElement.style.top = (boardRect.top + row * cellHeight) + 'px';
+	lineElement.style.height = cellHeight + 'px';
+	lineElement.style.left = boardRect.left + 'px';
+	lineElement.style.width = boardRect.width + 'px';
+	document.body.appendChild(lineElement);
+	setTimeout(() => lineElement.remove(), 300);
+}
+
+function screenShake() {
+	gameContainer.classList.add('screen-shake');
+	setTimeout(() => gameContainer.classList.remove('screen-shake'), 200);
+}
+
+function showScorePopup(points, row, col) {
+	const boardRect = boardElement.getBoundingClientRect();
+	const cells = boardElement.querySelectorAll('.cell');
+	const centerRow = Math.min(row + 2, BOARD_HEIGHT - 1);
+	const centerCol = Math.min(col + 2, BOARD_WIDTH - 1);
+	const index = centerRow * BOARD_WIDTH + centerCol;
+	if (cells[index]) {
+		const rect = cells[index].getBoundingClientRect();
+		const popup = document.createElement('div');
+		popup.className = 'score-popup';
+		popup.textContent = '+' + points;
+		popup.style.left = (rect.left + rect.width / 2 - 20) + 'px';
+		popup.style.top = rect.top + 'px';
+		document.body.appendChild(popup);
+		setTimeout(() => popup.remove(), 1000);
+	}
+}
+
+// Обновленная функция checkLines с эффектами
 function checkLines() {
 	let linesCleared = 0;
+	const rowsToClear = [];
 	
 	for (let row = BOARD_HEIGHT - 1; row >= 0; row--) {
 		if (board[row].every(cell => cell !== EMPTY)) {
-			// Удаление линии
-			board.splice(row, 1);
-			// Добавление новой пустой линии вверху
-			board.unshift(Array(BOARD_WIDTH).fill(EMPTY));
+			rowsToClear.push(row);
 			linesCleared++;
-			row++; // Проверяем ту же строку снова после сдвига
 		}
 	}
 	
 	if (linesCleared > 0) {
-		// Обновление счета
-		updateScore(linesCleared);
+		// Изменяем градиент фона при разрушении линий
+        changeBackgroundGradient(linesCleared);
+		// Эффекты для каждой удаляемой строки
+		rowsToClear.forEach(row => {
+			showLineEffect(row);
+			// Подсветка и частицы для каждой ячейки в строке
+			for (let col = 0; col < BOARD_WIDTH; col++) {
+				if (board[row][col] !== EMPTY) {
+					flashCell(row, col);
+					createParticles(row, col, board[row][col]);
+				}
+			}
+		});
+		
+		// Тряска экрана при удалении 2+ линий
+		if (linesCleared >= 2) {
+			screenShake();
+		}
+		
+		// Задержка перед фактическим удалением для визуального эффекта
+		setTimeout(() => {
+			for (const row of rowsToClear) {
+				board.splice(row, 1);
+				board.unshift(Array(BOARD_WIDTH).fill(EMPTY));
+			}
+			
+			// Расчет очков
+			const pointsMap = [0, 40, 100, 300, 1200];
+			const pointsEarned = pointsMap[linesCleared] * level;
+			score += pointsEarned;
+			lines += linesCleared;
+			level = Math.floor(lines / 10) + 1;
+			
+			scoreElement.textContent = score;
+			levelElement.textContent = level;
+			linesElement.textContent = lines;
+			
+			// Показываем всплывающее очко
+			showScorePopup(pointsEarned, rowsToClear[0] || 10, 5);
+			
+			renderBoard();
+		}, 100);
 	}
+	
+	return linesCleared;
 }
 
 // Обновление счета
@@ -860,10 +1044,13 @@ function updateScore(linesCleared) {
 	checkAchievements(linesCleared);
 	updateGameScoreAchiwements();
 	
-	// Обновление скорости игры
+// Обновление скорости игры с ограничением максимальной скорости
 	if (gameInterval) {
 		clearInterval(gameInterval);
-		gameInterval = setInterval(gameLoop, 1000 - (level - 1) * 100);
+		// Вычисляем интервал: чем выше уровень, тем меньше интервал
+		// Максимальная скорость = MIN_INTERVAL_MS (не быстрее)
+		let interval = Math.max(MIN_INTERVAL_MS, 1000 - (level - 1) * 50);
+		gameInterval = setInterval(gameLoop, interval);
 	}
 }
 
