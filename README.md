@@ -1,6 +1,1 @@
-<img src="for yandex games/1_eng.png">
-<img src="for yandex games/1_ru.png">
-<img src="for yandex games/2_eng.png">
-<img src="for yandex games/2_ru.png">
-<img src="for yandex games/3_eng.png">
-<img src="for yandex games/3_ru.png">
+<img src="Снимок экрана 2026-04-10 194418.png">
