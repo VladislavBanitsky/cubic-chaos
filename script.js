@@ -488,9 +488,6 @@ function applyTranslations() {
 	document.getElementById('new-game-button').textContent = t.newGameButton;
 	document.getElementById('stats-button').textContent = t.statsButton;
 	
-	// Обновляем title страницы
-	document.title = currentLanguage === 'ru' ? 'Не открывай, кубический джедай' : 'Do not open it, cubic Jedi';
-	
 	// Обновляем тексты в окне статистики
 	document.getElementById('stats-title-text').textContent = t.statsTitle;
 	document.getElementById('player-name-label').textContent = t.playerName;
@@ -890,8 +887,11 @@ function placePiece() {
 		return;
 	}
 	
-	renderBoard();
-	renderNextPiece();
+    // Перерисовываем только если checkLines не вызвал gameOver
+    if (!isGameOver) {
+        renderBoard();
+        renderNextPiece();
+    }
 }
 
 // Эффекты при разрушении линий
@@ -942,7 +942,7 @@ function showLineEffect(row) {
 	lineElement.style.left = boardRect.left + 'px';
 	lineElement.style.width = boardRect.width + 'px';
 	document.body.appendChild(lineElement);
-	setTimeout(() => lineElement.remove(), 300);
+	lineElement.remove();
 }
 
 function screenShake() {
@@ -980,50 +980,55 @@ function checkLines() {
 		}
 	}
 	
-	if (linesCleared > 0) {
-		// Изменяем градиент фона при разрушении линий
-        changeBackgroundGradient(linesCleared);
-		// Эффекты для каждой удаляемой строки
-		rowsToClear.forEach(row => {
-			showLineEffect(row);
-			// Подсветка и частицы для каждой ячейки в строке
-			for (let col = 0; col < BOARD_WIDTH; col++) {
-				if (board[row][col] !== EMPTY) {
-					flashCell(row, col);
-					createParticles(row, col, board[row][col]);
-				}
+	if (linesCleared === 0) return 0;
+	
+	// Изменяем градиент фона при разрушении линий
+	changeBackgroundGradient(linesCleared);
+	
+    // Синхронно удаляем строки (сначала показываем эффекты, потом удаляем)
+    const rowsToClearCopy = [...rowsToClear];
+	
+	// Эффекты для каждой удаляемой строки
+	rowsToClearCopy.forEach(row => {
+		showLineEffect(row);
+		// Подсветка и частицы для каждой ячейки в строке
+		for (let col = 0; col < BOARD_WIDTH; col++) {
+			if (board[row][col] !== EMPTY) {
+				flashCell(row, col);
+				createParticles(row, col, board[row][col]);
 			}
-		});
-		
-		// Тряска экрана при удалении 2+ линий
-		if (linesCleared >= 2) {
-			screenShake();
 		}
-		
-		// Задержка перед фактическим удалением для визуального эффекта
-		setTimeout(() => {
-			for (const row of rowsToClear) {
-				board.splice(row, 1);
-				board.unshift(Array(BOARD_WIDTH).fill(EMPTY));
-			}
-			
-			// Расчет очков
-			const pointsMap = [0, 40, 100, 300, 1200];
-			const pointsEarned = pointsMap[linesCleared] * level;
-			score += pointsEarned;
-			lines += linesCleared;
-			level = Math.floor(lines / 10) + 1;
-			
-			scoreElement.textContent = score;
-			levelElement.textContent = level;
-			linesElement.textContent = lines;
-			
-			// Показываем всплывающее очко
-			showScorePopup(pointsEarned, rowsToClear[0] || 10, 5);
-			
-			renderBoard();
-		}, 100);
+	});
+	
+	// Тряска экрана при удалении 2+ линий
+	if (linesCleared >= 2) {
+		screenShake();
 	}
+	
+	// Синхронно удаляем строки и обновляем счет
+	for (const row of rowsToClearCopy) {
+		board.splice(row, 1);
+		board.unshift(Array(BOARD_WIDTH).fill(EMPTY));
+	}
+	
+	// Расчет очков
+	const pointsMap = [0, 40, 100, 300, 1200];
+	const pointsEarned = pointsMap[linesCleared] * level;
+	score += pointsEarned;
+	lines += linesCleared;
+	level = Math.floor(lines / 10) + 1;
+	
+	scoreElement.textContent = score;
+	levelElement.textContent = level;
+	linesElement.textContent = lines;
+	
+	// Показываем всплывающее очко
+	if (rowsToClearCopy.length > 0) {
+		showScorePopup(pointsEarned, rowsToClear[0] || 10, 5);
+	}
+	
+    // Сразу перерисовываем поле
+	renderBoard();
 	
 	return linesCleared;
 }
