@@ -1022,6 +1022,8 @@ function checkLines() {
 	levelElement.textContent = level;
 	linesElement.textContent = lines;
 	
+	updateScore(linesCleared);
+	
 	// Показываем всплывающее очко
 	if (rowsToClearCopy.length > 0) {
 		showScorePopup(pointsEarned, rowsToClear[0] || 10, 5);
@@ -1062,7 +1064,7 @@ function updateScore(linesCleared) {
 // Проверка и разблокировка достижений
 function checkAchievements(linesCleared = 0) {
     const newAchievements = [];
-    
+    console.log("score:", score);
     // Проверка достижений по очкам
     if (score >= 1000 && !hasAchievement(ACHIEVEMENTS.SCORE_1000)) {
         newAchievements.push(ACHIEVEMENTS.SCORE_1000);
@@ -1424,8 +1426,6 @@ function gameOver() {
 	
 	finalScoreElement.textContent = score;
 	gameOverElement.style.display = 'flex';
-	
-	pauseButton.style.visibility = 'hidden'; // прячем кнопку Пауза/Продолжить
 	
 	updateGameScoreAchiwements(); // обновляем игровые достижения
 	
