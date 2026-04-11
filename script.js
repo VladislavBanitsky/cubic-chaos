@@ -854,46 +854,6 @@ function moveDown() {
 	renderBoard();
 }
 
-// Размещение фигуры на поле
-function placePiece() {
-	if (!currentPiece) return;
-	
-	for (let row = 0; row < currentPiece.shape.length; row++) {
-		for (let col = 0; col < currentPiece.shape[row].length; col++) {
-			if (currentPiece.shape[row][col]) {
-				const boardRow = currentPiece.row + row;
-				const boardCol = currentPiece.col + col;
-				
-				if (boardRow >= 0) {
-					board[boardRow][boardCol] = currentPiece.color;
-				}
-			}
-		}
-	}
-	
-	// Сбрасываем текущую фигуру сразу после размещения
-    currentPiece = null;
-	
-	// Проверка заполненных линий
-	checkLines();
-	
-	// Создание новой фигуры
-	currentPiece = nextPiece;
-	nextPiece = createPiece();
-	
-	// Проверка завершения игры
-	if (hasCollision(currentPiece)) {
-		gameOver();
-		return;
-	}
-	
-    // Перерисовываем только если checkLines не вызвал gameOver
-    if (!isGameOver) {
-        renderBoard();
-        renderNextPiece();
-    }
-}
-
 // Эффекты при разрушении линий
 function createParticles(row, col, color) {
 	const boardRect = boardElement.getBoundingClientRect();
@@ -968,71 +928,122 @@ function showScorePopup(points, row, col) {
 	}
 }
 
-// Обновленная функция checkLines с эффектами
-function checkLines() {
-	let linesCleared = 0;
-	const rowsToClear = [];
-	
-	for (let row = BOARD_HEIGHT - 1; row >= 0; row--) {
-		if (board[row].every(cell => cell !== EMPTY)) {
-			rowsToClear.push(row);
-			linesCleared++;
-		}
-	}
-	
-	if (linesCleared === 0) return 0;
-	
-	// Изменяем градиент фона при разрушении линий
-	changeBackgroundGradient(linesCleared);
-	
-    // Синхронно удаляем строки (сначала показываем эффекты, потом удаляем)
-    const rowsToClearCopy = [...rowsToClear];
-	
-	// Эффекты для каждой удаляемой строки
-	rowsToClearCopy.forEach(row => {
-		showLineEffect(row);
-		// Подсветка и частицы для каждой ячейки в строке
-		for (let col = 0; col < BOARD_WIDTH; col++) {
-			if (board[row][col] !== EMPTY) {
-				flashCell(row, col);
-				createParticles(row, col, board[row][col]);
-			}
-		}
-	});
-	
-	// Тряска экрана при удалении 2+ линий
-	if (linesCleared >= 2) {
-		screenShake();
-	}
-	
-	// Синхронно удаляем строки и обновляем счет
-	for (const row of rowsToClearCopy) {
-		board.splice(row, 1);
-		board.unshift(Array(BOARD_WIDTH).fill(EMPTY));
-	}
-	
-	// Расчет очков
-	const pointsMap = [0, 40, 100, 300, 1200];
-	const pointsEarned = pointsMap[linesCleared] * level;
-	score += pointsEarned;
-	lines += linesCleared;
-	level = Math.floor(lines / 10) + 1;
-	
-	scoreElement.textContent = score;
-	levelElement.textContent = level;
-	linesElement.textContent = lines;
-	
-	updateScore(linesCleared);
-	
-	// Показываем всплывающее очко
-	if (rowsToClearCopy.length > 0) {
-		showScorePopup(pointsEarned, rowsToClear[0] || 10, 5);
-	}
-	
-    // Сразу перерисовываем поле
-	renderBoard();
-	
-	return linesCleared;
+// Флаг для предотвращения повторного вызова checkLines
+let isCheckingLines = false;
+
+// Размещение фигуры на поле
+function placePiece() {
+    if (!currentPiece) return;
+    
+    // Размещаем фигуру на доске
+    for (let row = 0; row < currentPiece.shape.length; row++) {
+        for (let col = 0; col < currentPiece.shape[row].length; col++) {
+            if (currentPiece.shape[row][col]) {
+                const boardRow = currentPiece.row + row;
+                const boardCol = currentPiece.col + col;
+                if (boardRow >= 0) {
+                    board[boardRow][boardCol] = currentPiece.color;
+                }
+            }
+        }
+    }
+    
+    // Сбрасываем текущую фигуру
+    currentPiece = null;
+    
+    // СОХРАНЯЕМ состояние ДО проверки линий
+    const oldBoard = board.map(row => [...row]);
+    
+    // Удаляем линии и получаем количество
+    const linesCleared = clearCompleteLines();
+    
+    // Обновляем счет, если линии были очищены
+    if (linesCleared > 0) {
+        updateScore(linesCleared);
+    }
+    
+    // Создаем новую фигуру
+    currentPiece = nextPiece;
+    nextPiece = createPiece();
+    
+    // Проверяем game over
+    if (hasCollision(currentPiece)) {
+        gameOver();
+        return;
+    }
+    
+    // Перерисовываем всё
+    renderBoard();
+    renderNextPiece();
+    
+    // ЗАПУСКАЕМ ЭФФЕКТЫ ПОСЛЕ перерисовки
+    if (linesCleared > 0) {
+        // Задержка 10мс чтобы DOM успел обновиться
+        setTimeout(() => {
+            // Восстанавливаем старую доску для эффектов
+            const tempBoard = oldBoard;
+            
+            // Находим строки, которые были очищены
+            const clearedRows = [];
+            for (let row = 0; row < BOARD_HEIGHT; row++) {
+                if (tempBoard[row].every(cell => cell !== EMPTY)) {
+                    clearedRows.push(row);
+                }
+            }
+            
+            // Запускаем эффекты для этих строк
+            clearedRows.forEach(row => {
+                showLineEffect(row);
+                for (let col = 0; col < BOARD_WIDTH; col++) {
+                    if (tempBoard[row][col] !== EMPTY) {
+                        flashCell(row, col);
+                        createParticles(row, col, tempBoard[row][col]);
+                    }
+                }
+            });
+            
+            // Остальные эффекты
+            if (linesCleared >= 2) screenShake();
+            changeBackgroundGradient(linesCleared);
+            
+            const pointsMap = [0, 40, 100, 300, 1200];
+            const pointsEarned = pointsMap[linesCleared] * level;
+            if (clearedRows.length > 0) {
+                showScorePopup(pointsEarned, clearedRows[0], 5);
+            }
+        }, 10);
+    }
+}
+
+// НОВАЯ ФУНКЦИЯ: чистое удаление линий без эффектов
+function clearCompleteLines() {
+    let linesCleared = 0;
+    const rowsToKeep = [];
+    
+    // Проходим снизу вверх и сохраняем НЕполные строки
+    for (let row = BOARD_HEIGHT - 1; row >= 0; row--) {
+        const isFull = board[row].every(cell => cell !== EMPTY);
+        if (isFull) {
+            linesCleared++;
+            // Пропускаем эту строку (удаляем)
+        } else {
+            rowsToKeep.unshift([...board[row]]); // Сохраняем строку
+        }
+    }
+    
+    if (linesCleared === 0) return 0;
+    
+    // Строим новую доску: пустые строки сверху + сохраненные строки
+    const newBoard = [];
+    for (let i = 0; i < linesCleared; i++) {
+        newBoard.push(Array(BOARD_WIDTH).fill(EMPTY));
+    }
+    newBoard.push(...rowsToKeep);
+    
+    // Заменяем доску
+    board = newBoard;
+    
+    return linesCleared;
 }
 
 // Обновление счета
@@ -1049,7 +1060,6 @@ function updateScore(linesCleared) {
 	
 	// Проверяем достижения
 	checkAchievements(linesCleared);
-	updateGameScoreAchiwements();
 	
 // Обновление скорости игры с ограничением максимальной скорости
 	if (gameInterval) {
