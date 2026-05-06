@@ -271,7 +271,8 @@ const translations = {
 		totalAchievements: "Разблокировано достижений:",
         unlocked: "Разблокировано",
         locked: "Заблокировано",
-        statsButton: "Достижения"
+        statsButton: "Достижения",
+		menuButton: "Меню"
 	},
 	en: {
 		nextPiece: "Next",
@@ -303,7 +304,8 @@ const translations = {
 		totalAchievements: "Achievements unlocked:",
         unlocked: "Unlocked",
         locked: "Locked",
-        statsButton: "Achievements"
+        statsButton: "Achievements",
+		menuButton: "Menu"
 	}
 };
 
@@ -486,6 +488,7 @@ function applyTranslations() {
 	document.getElementById('final-score-text').textContent = t.finalScore;
 	document.getElementById('revive-button').textContent = t.reviveButton;
 	document.getElementById('new-game-button').textContent = t.newGameButton;
+	document.getElementById('menu-button').textContent = t.menuButton;
 	document.getElementById('stats-button').textContent = t.statsButton;
 	
 	// Обновляем тексты в окне статистики
